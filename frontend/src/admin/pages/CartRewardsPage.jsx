@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Truck, Gift, Percent, Save, Package, Eye } from 'lucide-react';
+import { Truck, Gift, Percent, Save, Package, Eye, Plus, Trash2 } from 'lucide-react';
 import { useAdminStore } from '../store/adminStore';
 import { useCartStore } from '../../store/useCartStore';
 import { saveCartOffers } from '../../api/cartOffersApi';
@@ -11,7 +11,7 @@ const EMPTY_OFFERS = {
   shippingFee: 0,
   giftWrapFee: 0,
   freeShipping: { enabled: false, threshold: 0 },
-  freeGift: { enabled: false, threshold: 0, productId: '', variantId: null },
+  freeGift: { enabled: false, threshold: 0, gifts: [] },
   extraDiscount: { enabled: false, threshold: 0, percent: 0 }
 };
 
@@ -26,8 +26,10 @@ const toSaved = (offers) => ({
   freeGift: {
     enabled: offers.freeGift.enabled,
     threshold: Number(offers.freeGift.threshold) || 0,
-    productId: offers.freeGift.productId || '',
-    variantId: offers.freeGift.variantId || null
+    // Rows without a product chosen yet are left out
+    gifts: (offers.freeGift.gifts || [])
+      .filter((g) => g.productId)
+      .map((g) => ({ productId: g.productId, variantId: g.variantId || null }))
   },
   extraDiscount: {
     enabled: offers.extraDiscount.enabled,
@@ -116,13 +118,17 @@ export const CartRewardsPage = () => {
 
   const setSection = (section, changes) => setForm((f) => ({ ...f, [section]: { ...f[section], ...changes } }));
 
-  const giftProduct = (products || []).find((p) => p.id === form.freeGift.productId);
-  const giftVariants = giftProduct?.variants || [];
+  const gifts = form.freeGift.gifts || [];
+  const productById = (id) => (products || []).find((p) => p.id === id);
+  const setGifts = (next) => setSection('freeGift', { gifts: next });
+  const updateGift = (index, changes) => setGifts(gifts.map((g, i) => (i === index ? { ...g, ...changes } : g)));
+  const addGift = () => setGifts([...gifts, { productId: '', variantId: null }]);
+  const removeGift = (index) => setGifts(gifts.filter((_, i) => i !== index));
 
   const handleSave = async () => {
     const saved = toSaved(form);
-    if (saved.freeGift.enabled && !saved.freeGift.productId) {
-      addToast({ type: 'error', title: 'Choose a gift', message: 'Select the product to give as the free gift.' });
+    if (saved.freeGift.enabled && !saved.freeGift.gifts.length) {
+      addToast({ type: 'error', title: 'Choose a gift', message: 'Select at least one product to give as a free gift.' });
       return;
     }
     if (saved.extraDiscount.enabled && !saved.extraDiscount.percent) {
@@ -149,7 +155,7 @@ export const CartRewardsPage = () => {
     ...toSaved(form),
     freeGift: {
       ...toSaved(form).freeGift,
-      item: giftProduct ? { title: giftProduct.title } : null
+      items: toSaved(form).freeGift.gifts.map((g) => ({ title: productById(g.productId)?.title || '' }))
     }
   };
   const previewRewards = activeRewards(previewOffers);
@@ -252,7 +258,7 @@ export const CartRewardsPage = () => {
         <RewardCard
           icon={Gift}
           title="Free Gift"
-          description="A product is added to the cart for free when the cart reaches this amount."
+          description="These products are added to the cart for free when the cart reaches this amount."
           enabled={form.freeGift.enabled}
           onToggle={(v) => setSection('freeGift', { enabled: v })}
         >
@@ -262,47 +268,84 @@ export const CartRewardsPage = () => {
               value={form.freeGift.threshold}
               onChange={(v) => setSection('freeGift', { threshold: v })}
             />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="space-y-1">
-                <label className="font-semibold text-stone-700 dark:text-stone-300">Gift Product</label>
-                <CustomSelect
-                  value={form.freeGift.productId}
-                  placeholder="Choose a product"
-                  onChange={(e) => {
-                    const p = (products || []).find((prod) => prod.id === e.target.value);
-                    setSection('freeGift', { productId: e.target.value, variantId: p?.variants?.[0]?.id || null });
-                  }}
-                  options={(products || []).map((p) => ({ value: p.id, label: p.title }))}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="font-semibold text-stone-700 dark:text-stone-300">Gift Pack</label>
-                <CustomSelect
-                  value={form.freeGift.variantId || ''}
-                  placeholder={giftVariants.length ? 'Choose a pack' : 'No packs'}
-                  disabled={!giftVariants.length}
-                  onChange={(e) => setSection('freeGift', { variantId: e.target.value })}
-                  options={giftVariants.map((v) => ({ value: v.id, label: `${v.name} (MRP ₹${v.mrp ?? v.price})` }))}
-                />
-              </div>
-            </div>
-            {giftProduct && (
-              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700">
-                {giftProduct.images?.[0] ? (
-                  <img src={giftProduct.images[0]} alt="" className="w-10 h-10 rounded-lg object-cover" />
-                ) : (
-                  <div className="w-10 h-10 rounded-lg bg-stone-200 dark:bg-stone-700 flex items-center justify-center">
-                    <Package className="w-4 h-4 text-stone-400" />
+            <div className="space-y-2 text-xs">
+              <label className="font-semibold text-stone-700 dark:text-stone-300">
+                Gift Products {gifts.length > 0 && <span className="text-stone-400 font-normal">({gifts.length})</span>}
+              </label>
+
+              {gifts.length === 0 && (
+                <p className="p-3 rounded-xl border border-dashed border-stone-300 dark:border-stone-700 text-center text-stone-500 dark:text-stone-400">
+                  No gift added yet. Click "Add Gift Product" below.
+                </p>
+              )}
+
+              {gifts.map((g, index) => {
+                const product = productById(g.productId);
+                const variants = product?.variants || [];
+                return (
+                  <div
+                    key={index}
+                    className="p-2.5 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 space-y-2"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {product?.images?.[0] ? (
+                        <img src={product.images[0]} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-stone-200 dark:bg-stone-700 flex items-center justify-center shrink-0">
+                          <Package className="w-4 h-4 text-stone-400" />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-ink dark:text-stone-100 truncate">
+                          {product ? product.title : `Gift ${index + 1}: choose a product`}
+                        </p>
+                        {product && (
+                          <p className="text-[11px] text-muted">
+                            {variants.find((v) => v.id === g.variantId)?.name || 'Standard'} • shown as FREE in the cart
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeGift(index)}
+                        className="p-1.5 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 shrink-0"
+                        title="Remove this gift"
+                        aria-label="Remove this gift"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <CustomSelect
+                        value={g.productId}
+                        placeholder="Choose a product"
+                        onChange={(e) => {
+                          const p = productById(e.target.value);
+                          updateGift(index, { productId: e.target.value, variantId: p?.variants?.[0]?.id || null });
+                        }}
+                        options={(products || []).map((p) => ({ value: p.id, label: p.title }))}
+                      />
+                      <CustomSelect
+                        value={g.variantId || ''}
+                        placeholder={variants.length ? 'Choose a pack' : 'No packs'}
+                        disabled={!variants.length}
+                        onChange={(e) => updateGift(index, { variantId: e.target.value })}
+                        options={variants.map((v) => ({ value: v.id, label: `${v.name} (MRP ₹${v.mrp ?? v.price})` }))}
+                      />
+                    </div>
                   </div>
-                )}
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-ink dark:text-stone-100 truncate">{giftProduct.title}</p>
-                  <p className="text-[11px] text-muted">
-                    {giftVariants.find((v) => v.id === form.freeGift.variantId)?.name || 'Standard'} • shown as FREE in the cart
-                  </p>
-                </div>
-              </div>
-            )}
+                );
+              })}
+
+              <button
+                type="button"
+                onClick={addGift}
+                className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Add Gift Product
+              </button>
+            </div>
           </div>
         </RewardCard>
 

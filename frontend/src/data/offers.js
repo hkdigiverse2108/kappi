@@ -12,12 +12,13 @@ export const activeRewards = (offers, subtotal = 0) => {
       unlockMessage: 'unlock FREE Shipping!'
     });
   }
-  if (offers.freeGift?.enabled && offers.freeGift.item) {
+  const gifts = offers.freeGift?.enabled ? offers.freeGift.items || [] : [];
+  if (gifts.length) {
     rewards.push({
       key: 'gift',
       threshold: offers.freeGift.threshold,
-      shortLabel: 'Free Gift',
-      unlockMessage: `get a FREE ${offers.freeGift.item.title}!`
+      shortLabel: gifts.length > 1 ? `${gifts.length} Free Gifts` : 'Free Gift',
+      unlockMessage: gifts.length > 1 ? `get ${gifts.length} FREE gifts!` : `get a FREE ${gifts[0].title}!`
     });
   }
   if (offers.extraDiscount?.enabled && offers.extraDiscount.percent > 0) {

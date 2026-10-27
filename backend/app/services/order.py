@@ -154,14 +154,14 @@ async def place_order(db, data: dict, user: dict | None, background_tasks: Backg
     subtotal = sum(i["price"] * i["quantity"] for i in items)
     gift = offers["freeGift"]
     if gift["enabled"] and subtotal >= gift["threshold"]:
-        items.append({
-            "id": f"item-{uuid.uuid4().hex[:8]}",
-            "variantId": gift.get("variantId"),
-            "price": 0,
-            "quantity": 1,
-            "isFreeGift": True,
-            **{k: gift["item"][k] for k in ("productId", "title", "variant", "mrp", "image")},
-        })
+        for gift_item in gift["items"]:
+            items.append({
+                "id": f"item-{uuid.uuid4().hex[:8]}",
+                "price": 0,
+                "quantity": 1,
+                "isFreeGift": True,
+                **{k: gift_item[k] for k in ("productId", "variantId", "title", "variant", "mrp", "image")},
+            })
     shipping_fee = _shipping_fee(offers, subtotal)
     coupon_code, coupon_discount = await _coupon_discount(db, data.get("couponCode"), items, subtotal, shipping_fee)
     extra = offers["extraDiscount"]

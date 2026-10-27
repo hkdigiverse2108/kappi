@@ -49,7 +49,7 @@ export const useCartStore = create(
       checkThresholdMilestones: (newSubtotal) => {
         const offers = get().cartOffers;
         const shipping = offers?.freeShipping;
-        const gift = offers?.freeGift?.enabled && offers.freeGift.item ? offers.freeGift : null;
+        const gift = offers?.freeGift?.enabled && offers.freeGift.items?.length ? offers.freeGift : null;
         const extra = offers?.extraDiscount?.enabled && offers.extraDiscount.percent > 0 ? offers.extraDiscount : null;
 
         const reached = {
@@ -60,8 +60,8 @@ export const useCartStore = create(
         const messages = {
           shipping: { title: '🎉 Free Shipping Unlocked!', desc: 'Your order qualifies for free delivery across India.' },
           gift: gift && {
-            title: '🎁 Free Gift Added!',
-            desc: `${gift.item.title} has been added to your cart for free.`
+            title: gift.items.length > 1 ? '🎁 Free Gifts Added!' : '🎁 Free Gift Added!',
+            desc: `${gift.items.map((g) => g.title).join(', ')} ${gift.items.length > 1 ? 'have' : 'has'} been added to your cart for free.`
           },
           extraDiscount: extra && {
             title: `🔥 Extra ${extra.percent}% Off Unlocked!`,
@@ -84,29 +84,30 @@ export const useCartStore = create(
           }
         });
 
-        // Auto manage the free gift in cart items (replaced if the admin picked another gift)
+        // Auto manage the free gifts in cart items (replaced if the admin changed the gifts)
         let items = get().items;
-        const giftItem = items.find((i) => i.isFreeGift);
-        const giftId = gift ? `gift-${gift.item.productId}-${gift.variantId || 'default'}` : null;
+        const giftId = (g) => `gift-${g.productId}-${g.variantId || 'default'}`;
+        const currentGiftIds = items.filter((i) => i.isFreeGift).map((i) => i.id).join('|');
+        const wantedGiftIds = reached.gift ? gift.items.map(giftId).join('|') : '';
 
-        if (reached.gift && giftItem?.id !== giftId) {
+        if (currentGiftIds !== wantedGiftIds) {
           items = [
             ...items.filter((i) => !i.isFreeGift),
-            {
-              id: giftId,
-              productId: gift.item.productId,
-              slug: gift.item.slug,
-              title: `🎁 ${gift.item.title} (Free Gift)`,
-              variantName: gift.item.variant,
-              price: 0,
-              mrp: gift.item.mrp,
-              quantity: 1,
-              image: gift.item.image,
-              isFreeGift: true
-            }
+            ...(reached.gift
+              ? gift.items.map((g) => ({
+                  id: giftId(g),
+                  productId: g.productId,
+                  slug: g.slug,
+                  title: `🎁 ${g.title} (Free Gift)`,
+                  variantName: g.variant,
+                  price: 0,
+                  mrp: g.mrp,
+                  quantity: 1,
+                  image: g.image,
+                  isFreeGift: true
+                }))
+              : [])
           ];
-        } else if (!reached.gift && giftItem) {
-          items = items.filter((i) => !i.isFreeGift);
         }
 
         if (changed || items !== get().items) {
