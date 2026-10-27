@@ -1,0 +1,12 @@
+# Robots.txt for KAPEE Enterprise
+User-agent: *
+Allow: /
+Disallow: /checkout
+Disallow: /account
+Disallow: /order-success
+
+# Crawl Delay
+Crawl-delay: 1
+
+# Sitemap Location
+Sitemap: https://kapee-enterprise.com/sitemap.xml

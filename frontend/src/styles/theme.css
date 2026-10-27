@@ -1,0 +1,160 @@
+/* ==========================================================================
+   KAPEE THEME & COLOR SYSTEM
+   Mood: Premium, calm, trustworthy, "luxury eco-clean"
+   60-30-10 Rule: ~60% Ivory/White, ~30% Emerald, ~10% Gold highlights
+   ========================================================================== */
+
+:root {
+  /* Brand Scales (Raw Hex) */
+  --emerald-50: #EAF4F2;
+  --emerald-100: #CFE6E2;
+  --emerald-200: #A0CDC5;
+  --emerald-300: #6FB2A7;
+  --emerald-400: #3D968A;
+  --emerald-500: #0F7A6F;
+  --emerald-600: #0A5C55;
+  --emerald-700: #074B45;
+  --emerald-800: #04403B;
+  --emerald-900: #032E2A;
+  --emerald-950: #021F1C;
+
+  --gold-50: #FDF8E8;
+  --gold-100: #F8EBC0;
+  --gold-200: #F1DB93;
+  --gold-300: #EBCB6B;
+  --gold-400: #DDB04A;
+  --gold-500: #C8962E;
+  --gold-600: #A87820;
+  --gold-700: #8F6414;
+  --gold-800: #6B4A0E;
+  --gold-900: #4A3309;
+
+  /* Gradients */
+  --gradient-gold: linear-gradient(135deg, #8F6414 0%, #EBCB6B 45%, #C8962E 100%);
+  --gradient-gold-hover: linear-gradient(135deg, #A87820 0%, #F1DB93 45%, #DDB04A 100%);
+  --gradient-emerald: linear-gradient(160deg, #032E2A 0%, #04403B 45%, #0A5C55 100%);
+
+  /* LIGHT MODE TOKENS (Default) */
+  --bg: #FBF8F1;
+  --surface: #FFFFFF;
+  --surface-2: #F4EEDF;
+  --surface-tint: #EAF4F2;
+
+  --border: #E7E0CE;
+  --border-strong: #D5CBB2;
+
+  --text: #0E1F1D;
+  --text-2: #3B4F4B;
+  --muted: #5B6B68;
+  --subtle: #8A9A97;
+
+  --primary: #0A5C55;
+  --primary-hover: #074B45;
+  --primary-deep: #04403B;
+
+  --accent: #C8962E;
+  --accent-light: #EBCB6B;
+  --accent-dark: #8F6414;
+
+  --ring: rgba(200, 150, 46, 0.45);
+
+  --shadow-sm: 0 1px 2px rgba(4, 64, 59, 0.06);
+  --shadow-md: 0 6px 18px rgba(4, 64, 59, 0.08);
+  --shadow-lg: 0 18px 40px rgba(4, 64, 59, 0.14);
+  --shadow-glow-gold: 0 0 0 1px rgba(235, 203, 107, 0.5), 0 8px 24px rgba(200, 150, 46, 0.28);
+  --inner-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  /* Semantic Light */
+  --semantic-success-text: #1E8E5A;
+  --semantic-success-bg: #E3F4EB;
+  --semantic-success-border: #BFE3CF;
+
+  --semantic-warning-text: #D98E04;
+  --semantic-warning-bg: #FDF1D6;
+  --semantic-warning-border: #F3D58E;
+
+  --semantic-error-text: #C0392B;
+  --semantic-error-bg: #FBE4E1;
+  --semantic-error-border: #F1B8B1;
+
+  --semantic-info-text: #2563EB;
+  --semantic-info-bg: #E4ECFD;
+  --semantic-info-border: #BBCDF8;
+}
+
+/* ==========================================================================
+   DARK MODE TOKENS (Deep Emerald-Black)
+   ========================================================================== */
+html.dark,
+[data-theme="dark"],
+.dark {
+  --bg: #061412;
+  --surface: #0C1F1C;
+  --surface-2: #112A26;
+  --surface-tint: #0F332D;
+
+  --border: #1C3A35;
+  --border-strong: #2A4F48;
+
+  --text: #EAF3F1;
+  --text-2: #C3D6D2;
+  --muted: #8FA8A3;
+  --subtle: #6B8580;
+
+  --primary: #1FA394;
+  --primary-hover: #34BBAA;
+  --primary-deep: #0F7A6F;
+
+  --accent: #EBCB6B;
+  --accent-light: #F1DB93;
+  --accent-dark: #C8962E;
+
+  --ring: rgba(235, 203, 107, 0.5);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.65);
+  --shadow-glow-gold: 0 0 0 1px rgba(235, 203, 107, 0.4), 0 8px 24px rgba(200, 150, 46, 0.35);
+  --inner-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+  /* Semantic Dark (approx 20% opacity backgrounds with luminous text) */
+  --semantic-success-text: #34D399;
+  --semantic-success-bg: rgba(30, 142, 90, 0.2);
+  --semantic-success-border: rgba(30, 142, 90, 0.35);
+
+  --semantic-warning-text: #FBBF24;
+  --semantic-warning-bg: rgba(217, 142, 4, 0.2);
+  --semantic-warning-border: rgba(217, 142, 4, 0.35);
+
+  --semantic-error-text: #F87171;
+  --semantic-error-bg: rgba(192, 57, 43, 0.2);
+  --semantic-error-border: rgba(192, 57, 43, 0.35);
+
+  --semantic-info-text: #60A5FA;
+  --semantic-info-bg: rgba(37, 99, 235, 0.2);
+  --semantic-info-border: rgba(37, 99, 235, 0.35);
+}
+
+/* Smooth 300ms theme transition across canvas, surfaces, text & borders */
+body,
+header,
+aside,
+nav,
+main,
+footer,
+.card-kui,
+.table-kui,
+.table-kui th,
+.table-kui td,
+.btn-primary,
+.btn-gold,
+.btn-secondary,
+.btn-ghost,
+.btn-destructive,
+input,
+select,
+textarea {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}

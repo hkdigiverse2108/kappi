@@ -1,0 +1,350 @@
+@import './styles/theme.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    color: var(--text);
+    background-color: var(--bg);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    overflow-x: clip;
+    background-color: var(--bg);
+    color: var(--text);
+  }
+
+  h1, h2, h3, .font-serif {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+
+  /* Admin Scope - Comprehensive typography alignment with website */
+  .admin-scope,
+  .admin-scope * {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+  }
+
+  .admin-scope h1 {
+    font-weight: 800 !important;
+    letter-spacing: -0.025em;
+  }
+
+  .admin-scope h2,
+  .admin-scope h3,
+  .admin-scope h4 {
+    font-weight: 700 !important;
+    letter-spacing: -0.015em;
+  }
+
+  /* Selection: Gold-200 bg with Emerald-900 text */
+  ::selection {
+    background: #F1DB93;
+    color: #032E2A;
+  }
+
+  /* Form Controls: KAPEE Brand Emerald Theme Accent */
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: #0A5C55;
+  }
+
+  select {
+    accent-color: #0A5C55;
+    background-color: #FAFAF9;
+    color: #1A1A1A;
+    border-color: #E7E5E4;
+  }
+
+  select:focus {
+    outline: none;
+    border-color: #0A5C55;
+    box-shadow: 0 0 0 2px rgba(10, 92, 85, 0.2);
+  }
+
+  select option {
+    background-color: #FFFFFF;
+    color: #1A1A1A;
+    padding: 8px 12px;
+  }
+
+  .dark select option,
+  [data-theme="dark"] select option {
+    background-color: #1C1917;
+    color: #F5F5F4;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface-2);
+}
+::-webkit-scrollbar-thumb {
+  background: #A0CDC5; /* Emerald-200 */
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb,
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #074B45; /* Emerald-700 */
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #6FB2A7; /* Emerald-300 */
+}
+.dark ::-webkit-scrollbar-thumb:hover,
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #0A5C55; /* Emerald-600 */
+}
+
+/* ==========================================================================
+   BUTTON DESIGN SYSTEM
+   ========================================================================== */
+
+/* Primary CTA: Emerald gradient, white text, gold shine & gold glow on hover */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(160deg, #0A5C55 0%, #04403B 100%);
+  color: #FFFFFF;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  padding: 0.65rem 1.25rem;
+  box-shadow: var(--shadow-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  outline: none;
+}
+.btn-primary:hover {
+  box-shadow: var(--shadow-glow-gold);
+  transform: translateY(-1px);
+}
+.btn-primary:active {
+  transform: translateY(0);
+  scale: 0.98;
+}
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(235, 203, 107, 0.45), transparent);
+  transform: skewX(-20deg);
+}
+.btn-primary:hover::after {
+  animation: shine 0.75s ease-in-out;
+}
+
+/* Gold CTA: For key actions (Publish, Create Shipment, etc.) */
+.btn-gold {
+  position: relative;
+  overflow: hidden;
+  background: var(--gradient-gold);
+  color: #04403B;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  padding: 0.65rem 1.25rem;
+  box-shadow: 0 4px 14px rgba(200, 150, 46, 0.28);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  outline: none;
+}
+.btn-gold:hover {
+  background: var(--gradient-gold-hover);
+  box-shadow: var(--shadow-glow-gold);
+  transform: translateY(-1px);
+}
+.btn-gold:active {
+  transform: translateY(0);
+  scale: 0.98;
+}
+.btn-gold::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: skewX(-20deg);
+}
+.btn-gold:hover::after {
+  animation: shine 0.75s ease-in-out;
+}
+
+/* Secondary Button: White/Surface bg + Emerald border/text, hover emerald-50 */
+.btn-secondary {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--primary-deep);
+  font-weight: 600;
+  border-radius: 0.75rem;
+  padding: 0.65rem 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  outline: none;
+}
+.btn-secondary:hover {
+  background: var(--surface-tint);
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+.btn-secondary:active {
+  transform: translateY(0);
+}
+
+/* Ghost Button: text only with emerald soft hover */
+.btn-ghost {
+  background: transparent;
+  color: var(--text-2);
+  font-weight: 600;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  outline: none;
+}
+.btn-ghost:hover {
+  background: var(--surface-tint);
+  color: var(--primary);
+}
+
+/* Destructive Button: error red with soft red hover */
+.btn-destructive {
+  background: var(--semantic-error-text);
+  color: #FFFFFF;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  padding: 0.65rem 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  outline: none;
+}
+.btn-destructive:hover {
+  opacity: 0.92;
+  box-shadow: 0 4px 12px rgba(192, 57, 43, 0.35);
+}
+
+/* Universal Disabled State */
+button:disabled,
+input:disabled,
+select:disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   CARDS, INPUTS & FOCUS RINGS
+   ========================================================================== */
+
+/* Standard Card */
+.card-kui {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+.card-kui:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.dark .card-kui,
+[data-theme="dark"] .card-kui {
+  box-shadow: var(--shadow-sm), var(--inner-highlight);
+}
+
+/* Form Inputs */
+.input-kui {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.875rem;
+  outline: none;
+}
+.input-kui:hover {
+  border-color: var(--border-strong);
+}
+.input-kui:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+.input-kui::placeholder {
+  color: var(--subtle);
+}
+
+/* Table Design */
+.table-kui thead tr {
+  background-color: var(--surface-2);
+}
+.table-kui th {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+.table-kui tbody tr:hover {
+  background-color: var(--surface-tint);
+}
+.table-kui tbody tr.selected {
+  background-color: #EAF4F2;
+  border-left: 3px solid #0A5C55;
+}
+
+/* Animations */
+@keyframes shine {
+  0% { left: -100%; }
+  100% { left: 150%; }
+}
+
+/* WhatsApp Floating Action Pulse & Radar Animation */
+@keyframes whatsappPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 16px rgba(37, 211, 102, 0);
+    transform: scale(1.05);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+    transform: scale(1);
+  }
+}
+
+.animate-whatsapp-pulse {
+  animation: whatsappPulse 2s infinite ease-in-out;
+}
+
