@@ -14,12 +14,6 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://kapee-enterprise.com/how-it-works</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://kapee-enterprise.com/about</loc>
     <lastmod>2026-10-22</lastmod>
     <changefreq>monthly</changefreq>
@@ -32,7 +26,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://kapee-enterprise.com/faq</loc>
+    <loc>https://kapee-enterprise.com/faqs</loc>
     <lastmod>2026-10-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -64,85 +58,7 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://kapee-enterprise.com/product/bathroom-scale-and-grime-cleaner-spray</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kapee-enterprise.com/product/microfiber-extra-plush-cloth-set</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kapee-enterprise.com/product/streak-free-glass-and-mirror-cloth</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kapee-enterprise.com/product/sneaker-revive-stain-cleaning-kit</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kapee-enterprise.com/product/tile-grout-and-crevice-power-brush</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kapee-enterprise.com/product/natural-citrus-dish-wash-gel</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kapee-enterprise.com/product/multi-surface-antibacterial-cleaner-spray</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kapee-enterprise.com/product/ultimate-home-deep-clean-combo</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kapee-enterprise.com/product/stainless-steel-and-chimney-degreaser-sponge</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kapee-enterprise.com/product/starter-clean-magic-kit</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kapee-enterprise.com/product/kitchen-grease-chimney-buster-trio</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kapee-enterprise.com/product/bathroom-hard-water-descaling-duo</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://kapee-enterprise.com/product/family-value-mega-deep-clean-hamper</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kapee-enterprise.com/product/sneaker-white-kicks-revive-box</loc>
     <lastmod>2026-10-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
