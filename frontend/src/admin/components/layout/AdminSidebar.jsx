@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
+  X,
   Sparkles,
   PhoneCall,
   BookOpen,
@@ -31,13 +32,16 @@ import {
   Palette,
   Gift,
   MessageSquareText,
-  PanelBottom
+  PanelBottom,
+  Search
 } from 'lucide-react';
 import { useAdminStore } from '../../store/adminStore';
 
-export const AdminSidebar = () => {
+export const AdminSidebar = ({ mobileOpen = false, onMobileClose }) => {
   const location = useLocation();
-  const { sidebarCollapsed, toggleSidebar, orders, reviews, enquiries } = useAdminStore();
+  const { sidebarCollapsed: collapsedSetting, toggleSidebar, orders, reviews, enquiries } = useAdminStore();
+  // The mobile drawer always shows full labels
+  const sidebarCollapsed = collapsedSetting && !mobileOpen;
   const [cmsExpanded, setCmsExpanded] = useState(
     location.pathname.startsWith('/admin/cms')
   );
@@ -70,6 +74,7 @@ export const AdminSidebar = () => {
   const bottomNavItems = [
     { label: 'Inquiries', path: '/admin/marketing', icon: MessageSquareText, badge: newEnquiriesCount > 0 ? newEnquiriesCount : null, badgeColor: 'bg-[#C8962E] text-[#04403B]' },
     { label: 'Reports', path: '/admin/reports', icon: BarChart3 },
+    { label: 'SEO', path: '/admin/seo', icon: Search },
   ];
 
   const isCurrentActive = (path) => {
@@ -82,9 +87,9 @@ export const AdminSidebar = () => {
       style={{
         background: 'linear-gradient(160deg, #032E2A 0%, #04403B 45%, #0A5C55 100%)',
       }}
-      className={`fixed top-0 bottom-0 left-0 z-30 text-white flex flex-col transition-all duration-300 ease-in-out border-r border-[#074B45] shadow-xl overflow-hidden ${
-        sidebarCollapsed ? 'w-20' : 'w-64'
-      }`}
+      className={`fixed top-0 bottom-0 left-0 z-30 text-white flex flex-col transition-all duration-300 ease-in-out border-r border-[#074B45] shadow-xl overflow-hidden w-64 lg:translate-x-0 ${
+        sidebarCollapsed ? 'lg:w-20' : 'lg:w-64'
+      } ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
     >
       {/* Subtle Leaf Pattern Overlay (4% opacity) */}
       <div
@@ -137,10 +142,19 @@ export const AdminSidebar = () => {
           )}
         </Link>
 
+        {/* Close (mobile drawer) */}
+        <button
+          onClick={onMobileClose}
+          className="lg:hidden p-1.5 rounded-lg text-[#CFE6E2]/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+          aria-label="Close sidebar"
+        >
+          <X className="w-4 h-4" />
+        </button>
+
         {/* Collapse Toggle */}
         <button
           onClick={toggleSidebar}
-          className="p-1.5 rounded-lg text-[#CFE6E2]/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+          className="hidden lg:block p-1.5 rounded-lg text-[#CFE6E2]/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
           title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}

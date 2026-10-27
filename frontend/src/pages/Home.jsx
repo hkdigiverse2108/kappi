@@ -48,6 +48,8 @@ const toExternalUrl = (url) => {
   return /^(https?:)?\/\//i.test(link) || link.startsWith('/') ? link : `https://${link}`;
 };
 
+
+
 export const Home = () => {
   // All home content is managed in Admin > Homepage CMS and loaded from the backend (GET /api/home)
   const {
@@ -80,42 +82,28 @@ export const Home = () => {
 
   return (
     <div className="overflow-hidden">
+      {/* Title & meta tags come from Admin > SEO via RouteSeo; this adds the store rating data */}
       {seo && (
         <Helmet>
-          {seo.title && <title>{seo.title}</title>}
-          {seo.description && <meta name="description" content={seo.description} />}
-          {seo.keywords && <meta name="keywords" content={seo.keywords} />}
-          {seo.canonicalUrl && <link rel="canonical" href={seo.canonicalUrl} />}
-
-          {/* OpenGraph */}
-          <meta property="og:type" content="website" />
-          {seo.canonicalUrl && <meta property="og:url" content={seo.canonicalUrl} />}
-          {seo.ogTitle && <meta property="og:title" content={seo.ogTitle} />}
-          {seo.ogDescription && <meta property="og:description" content={seo.ogDescription} />}
-          {seo.ogImage && <meta property="og:image" content={seo.ogImage} />}
-
-          {/* Twitter */}
-          <meta name="twitter:card" content="summary_large_image" />
-          {seo.twitterTitle && <meta name="twitter:title" content={seo.twitterTitle} />}
-          {seo.twitterDescription && <meta name="twitter:description" content={seo.twitterDescription} />}
-          {seo.ogImage && <meta name="twitter:image" content={seo.ogImage} />}
-
-          {/* Structured Data: Store & AggregateRating */}
           <script type="application/ld+json">
             {JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Store",
-              "name": seo.storeName,
-              "url": seo.storeUrl,
-              "image": seo.ogImage,
-              "description": seo.storeDescription,
-              "priceRange": seo.priceRange,
-              "aggregateRating": {
-                "@type": "AggregateRating",
-                "ratingValue": seo.ratingValue,
-                "reviewCount": seo.reviewCount,
-                "bestRating": "5"
-              }
+              '@context': 'https://schema.org',
+              '@type': 'Store',
+              name: seo.storeName,
+              url: seo.storeUrl,
+              image: seo.ogImage,
+              description: seo.storeDescription,
+              priceRange: seo.priceRange,
+              ...(seo.ratingValue && seo.reviewCount
+                ? {
+                    aggregateRating: {
+                      '@type': 'AggregateRating',
+                      ratingValue: seo.ratingValue,
+                      reviewCount: seo.reviewCount,
+                      bestRating: '5'
+                    }
+                  }
+                : {})
             })}
           </script>
         </Helmet>
@@ -130,7 +118,7 @@ export const Home = () => {
       {isSectionVisible('hero') && heroBanner && (
         <section className="relative w-full bg-[#EBF3EF] border-b border-emerald-soft/70 overflow-hidden">
           {/* Full Screen Banner Container taking 100% of visible viewport below header */}
-          <div className="relative w-full group h-[calc(100vh-106px)] min-h-[520px] overflow-hidden">
+          <div className="relative w-full group overflow-hidden">
             <Link
               to={heroBanner.bannerLink || '/'}
               className="block relative w-full h-full overflow-hidden cursor-pointer"
@@ -139,7 +127,7 @@ export const Home = () => {
               <img
                 src={heroBanner.image}
                 alt={heroBanner.altText}
-                className="w-full h-full block object-cover object-center transition-transform duration-700 group-hover:scale-[1.01]"
+                className="w-full h-auto max-h-[calc(100vh-106px)] block object-cover object-center transition-transform duration-700 group-hover:scale-[1.01]"
                 fetchPriority="high"
               />
               {/* Subtle sheen highlight on hover */}
@@ -151,10 +139,10 @@ export const Home = () => {
           {heroBanner.showActionStrip !== false && (
             <div className="relative z-10 bg-white/95 backdrop-blur-md border-t border-emerald-soft/60 px-4 sm:px-6 lg:px-8 py-3 shadow-xs">
               <FadeIn direction="up" delay={0.1}>
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3.5 sm:gap-4">
+                <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-3.5 sm:gap-4">
                   
                   {/* Trust and Rating Highlights */}
-                  <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap justify-center md:justify-start text-center md:text-left">
+                  <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap justify-center lg:justify-start text-center lg:text-left">
                     <div className="flex items-center gap-1 text-gold">
                       {[...Array(Math.max(1, Math.min(5, Number(heroBanner.ratingStars) || 5)))].map((_, i) => (
                         <Star key={i} className="w-4 h-4 fill-current text-gold" />
@@ -176,7 +164,7 @@ export const Home = () => {
                   </div>
 
                   {/* CTAs */}
-                  <div className="flex items-center gap-3 w-full sm:w-auto justify-center">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto justify-center">
                     {heroBanner.primaryCtaText && (
                       <Link
                         to={heroBanner.primaryCtaLink || '/'}
@@ -267,7 +255,7 @@ export const Home = () => {
               {bestSellersSection?.linkText && (
                 <Link
                   to={bestSellersSection.linkUrl || '/'}
-                  className="text-xs sm:text-sm font-bold text-emerald-deep hover:text-emerald flex items-center gap-1.5 underline underline-offset-4"
+                  className="text-xs sm:text-sm font-bold text-emerald-deep hover:text-emerald flex items-center gap-1.5 underline underline-offset-4 whitespace-nowrap shrink-0"
                 >
                   {bestSellersSection.linkText} <ArrowRight className="w-4 h-4" />
                 </Link>

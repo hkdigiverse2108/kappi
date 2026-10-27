@@ -15,6 +15,7 @@ import {
   Leaf
 } from 'lucide-react';
 import { bulkBarVariants, staggerContainer, rowVariants } from '../../lib/motion';
+import { downloadCSV } from '../../lib/csv';
 
 export const DataTable = ({
   columns,
@@ -26,7 +27,9 @@ export const DataTable = ({
   filters,
   activeFilter,
   onFilterChange,
-  extraHeaderActions
+  extraHeaderActions,
+  exportColumns,
+  exportFileName = 'kapee-export'
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
@@ -112,33 +115,30 @@ export const DataTable = ({
     );
   };
 
+  // Exports every row matching the current search/filters (not just the visible page).
+  // Pages pass exportColumns for readable values; otherwise plain accessor values are used.
   const exportCSV = () => {
     if (!filteredData.length) return;
-    const headers = columns.map((c) => c.header).join(',');
-    const rows = filteredData.map((row) =>
+    const csvColumns =
+      exportColumns ||
       columns
-        .map((c) => {
-          const val = c.accessor ? row[c.accessor] : '';
-          return `"${String(val || '').replace(/"/g, '""')}"`;
-        })
-        .join(',')
-    );
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers, ...rows].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `kapee-export-${Date.now()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+        .filter((c) => c.accessor)
+        .map((c) => ({
+          header: c.header,
+          value: (row) => {
+            const val = row[c.accessor];
+            return val !== null && typeof val === 'object' && !Array.isArray(val) ? '' : val;
+          }
+        }));
+    downloadCSV(exportFileName, csvColumns, filteredData);
   };
 
   return (
     <div className="space-y-4">
       {/* Search and Action Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-stone-900 p-4 rounded-2xl border border-stone-200/80 dark:border-stone-800 shadow-sm">
-        <div className="flex items-center gap-3 flex-1">
-          <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-white dark:bg-stone-900 p-3 sm:p-4 rounded-2xl border border-stone-200/80 dark:border-stone-800 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-1 min-w-0">
+          <div className="relative flex-1 min-w-0 lg:max-w-md">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
             <input
               type="text"
@@ -153,7 +153,7 @@ export const DataTable = ({
           </div>
 
           {filters && filters.length > 0 && (
-            <div className="flex items-center bg-stone-100 dark:bg-stone-800 p-1 rounded-xl">
+            <div className="flex items-center bg-stone-100 dark:bg-stone-800 p-1 rounded-xl overflow-x-auto self-start max-w-full">
               {filters.map((f) => (
                 <button
                   key={f.key}
@@ -175,12 +175,14 @@ export const DataTable = ({
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {extraHeaderActions}
           <button
             type="button"
             onClick={exportCSV}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-stone-50 hover:bg-stone-100 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 border border-stone-200 dark:border-stone-700 rounded-xl text-xs font-semibold transition-all"
+            disabled={!filteredData.length}
+            title={filteredData.length ? `Export ${filteredData.length} record(s) to CSV` : 'No records to export'}
+            className="shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3.5 py-2 bg-stone-50 hover:bg-stone-100 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 border border-stone-200 dark:border-stone-700 rounded-xl text-xs font-semibold transition-all"
           >
             <Download className="w-3.5 h-3.5" />
             Export CSV
@@ -298,7 +300,7 @@ export const DataTable = ({
         </div>
 
         {/* Footer Pagination */}
-        <div className="px-4 py-3 bg-stone-50/50 dark:bg-stone-800/30 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between text-xs text-muted dark:text-stone-400">
+        <div className="px-4 py-3 bg-stone-50/50 dark:bg-stone-800/30 border-t border-stone-200 dark:border-stone-800 flex flex-wrap items-center justify-between gap-2 text-xs text-muted dark:text-stone-400">
           <div>
             Showing <span className="font-semibold text-stone-700 dark:text-stone-200">{paginatedData.length ? (currentPage - 1) * pageSize + 1 : 0}</span> to{' '}
             <span className="font-semibold text-stone-700 dark:text-stone-200">
@@ -337,13 +339,13 @@ export const DataTable = ({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-ink text-white dark:bg-stone-900 border border-stone-700 shadow-2xl rounded-2xl px-5 py-3 flex items-center gap-4 backdrop-blur-md"
+            className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] sm:w-auto bg-ink text-white dark:bg-stone-900 border border-stone-700 shadow-2xl rounded-2xl px-4 sm:px-5 py-3 flex flex-wrap items-center justify-center gap-3 sm:gap-4 backdrop-blur-md"
           >
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-deep text-white">
               {selectedIds.length} Selected
             </span>
 
-            <div className="h-4 w-px bg-stone-700" />
+            <div className="hidden sm:block h-4 w-px bg-stone-700" />
 
             <div className="flex items-center gap-2">
               {bulkActions(selectedIds, () => setSelectedIds([]))}

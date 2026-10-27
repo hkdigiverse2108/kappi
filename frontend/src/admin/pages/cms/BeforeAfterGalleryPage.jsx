@@ -116,7 +116,7 @@ export const BeforeAfterGalleryPage = () => {
             key={pair.id}
             onClick={() => setPreviewPair(pair)}
             className={`p-4 rounded-2xl border bg-white dark:bg-stone-900 shadow-2xs space-y-3 cursor-pointer transition-all ${
-              previewPair.id === pair.id ? 'border-emerald-deep ring-2 ring-emerald-500/20' : 'hover:border-stone-300'
+              previewPair.id === pair.id ? 'border-emerald-deep ring-2 ring-emerald-500/20' : 'hover:border-stone-300 dark:hover:border-stone-600'
             }`}
           >
             <div className="grid grid-cols-2 gap-2 h-28 rounded-xl overflow-hidden">
@@ -124,7 +124,7 @@ export const BeforeAfterGalleryPage = () => {
               <img src={pair.after} alt="" className="w-full h-full object-cover" />
             </div>
             <div>
-              <span className="text-[10px] uppercase font-bold text-emerald-deep">{pair.surface}</span>
+              <span className="text-[10px] uppercase font-bold text-emerald-deep dark:text-emerald-300">{pair.surface}</span>
               <h4 className="font-bold text-xs text-ink dark:text-stone-100">{pair.title}</h4>
               <p className="text-[11px] text-stone-500 line-clamp-1">{pair.caption}</p>
             </div>
@@ -147,7 +147,7 @@ export const BeforeAfterGalleryPage = () => {
       >
         <div className="space-y-4 text-xs">
           <div className="space-y-1">
-            <label className="font-semibold text-stone-700">Headline Title *</label>
+            <label className="font-semibold text-stone-700 dark:text-stone-300">Headline Title *</label>
             <input
               type="text"
               value={pairForm.title}
@@ -156,7 +156,7 @@ export const BeforeAfterGalleryPage = () => {
             />
           </div>
           <div className="space-y-1">
-            <label className="font-semibold text-stone-700">Surface Category</label>
+            <label className="font-semibold text-stone-700 dark:text-stone-300">Surface Category</label>
             <input
               type="text"
               value={pairForm.surface}
@@ -165,7 +165,7 @@ export const BeforeAfterGalleryPage = () => {
             />
           </div>
           <div className="space-y-1">
-            <label className="font-semibold text-stone-700">Description Caption</label>
+            <label className="font-semibold text-stone-700 dark:text-stone-300">Description Caption</label>
             <textarea
               value={pairForm.caption}
               onChange={(e) => setPairForm({ ...pairForm, caption: e.target.value })}

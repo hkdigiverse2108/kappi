@@ -99,7 +99,7 @@ export const CartDrawer = () => {
       />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-white shadow-drawer flex flex-col justify-between">
+        <div className="w-[calc(100vw-2.5rem)] max-w-md bg-white shadow-drawer flex flex-col justify-between">
           {/* Header */}
           <div className="px-5 py-4 border-b border-emerald-soft flex items-center justify-between bg-ivory">
             <div className="flex items-center gap-2">

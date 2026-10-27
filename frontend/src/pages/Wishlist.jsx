@@ -82,7 +82,7 @@ export const Wishlist = () => {
             </div>
             <h2 className="font-serif text-2xl font-bold text-ink">Your Wishlist is Empty</h2>
             <p className="text-xs sm:text-sm text-muted max-w-md mx-auto leading-relaxed">
-              Explore our German melamine magic erasers, chimney busters, and cleaning combos, and tap the heart icon to save your favorites here.
+              Explore our German melamine magic erasers, chimney busters, and cleaning essentials, and tap the heart icon to save your favorites here.
             </p>
             <div className="pt-2">
               <Link to="/shop" className="btn-primary inline-flex text-xs px-7 py-3 cursor-pointer">
@@ -93,14 +93,14 @@ export const Wishlist = () => {
 
           {/* Recommended Products Section */}
           <div className="space-y-6 pt-4">
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex items-start sm:items-center justify-between gap-3">
+              <div className="min-w-0">
                 <h3 className="font-serif text-xl sm:text-2xl font-bold text-ink flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-gold-dark" /> Recommended Cleaners
                 </h3>
                 <p className="text-xs text-muted mt-0.5">Top picks customer favorites to start your cleaning journey</p>
               </div>
-              <Link to="/shop" className="text-xs sm:text-sm font-bold text-emerald hover:underline">
+              <Link to="/shop" className="text-xs sm:text-sm font-bold text-emerald hover:underline whitespace-nowrap shrink-0">
                 View All →
               </Link>
             </div>

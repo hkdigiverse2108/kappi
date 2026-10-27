@@ -36,6 +36,7 @@ import { triggerKapeeCelebration } from '../components/common/Confetti';
 import { CustomSelect } from '../components/common/CustomSelect';
 import { DateRangePicker } from '../components/common/DateRangePicker';
 import { confirmDelete } from '../../store/useConfirmStore';
+import { csvDate } from '../lib/csv';
 
 // Small icon in the orders table that shows its details on hover.
 // The tooltip is drawn on <body> so the table's overflow can't cut it off.
@@ -420,6 +421,7 @@ export const OrdersPage = () => {
   const columns = [
     {
       header: 'Order',
+      className: 'whitespace-nowrap',
       accessor: 'orderNumber',
       cell: (row) => (
         <div>
@@ -432,6 +434,7 @@ export const OrdersPage = () => {
     },
     {
       header: 'Customer',
+      className: 'whitespace-nowrap',
       accessor: 'customer',
       cell: (row) => (
         <div>
@@ -446,6 +449,7 @@ export const OrdersPage = () => {
     },
     {
       header: 'Items',
+      className: 'whitespace-nowrap',
       cell: (row) => (
         <span className="text-xs text-stone-600 dark:text-stone-300">
           {row.items.length} item(s){row.items[0]?.variant ? ` • ${row.items[0].variant}` : ''}
@@ -462,6 +466,7 @@ export const OrdersPage = () => {
     },
     {
       header: 'Total',
+      className: 'whitespace-nowrap',
       accessor: 'pricing',
       cell: (row) => (
         <div>
@@ -474,11 +479,13 @@ export const OrdersPage = () => {
     },
     {
       header: 'Status',
+      className: 'whitespace-nowrap',
       accessor: 'status',
       cell: (row) => <StatusBadge status={row.status} />
     },
     {
       header: 'Actions',
+      className: 'whitespace-nowrap',
       disableRowClick: true,
       cell: (row) => (
         <div className="flex items-center gap-1.5">
@@ -502,6 +509,36 @@ export const OrdersPage = () => {
         </div>
       )
     }
+  ];
+
+  const orderExportColumns = [
+    { header: 'Order Number', value: (o) => o.orderNumber },
+    { header: 'Order Date', value: (o) => csvDate(o.createdAt) },
+    { header: 'Status', value: (o) => o.status },
+    { header: 'Source', value: (o) => o.source },
+    { header: 'Customer Name', value: (o) => o.customer?.name },
+    { header: 'Email', value: (o) => o.customer?.email },
+    { header: 'Phone', value: (o) => o.customer?.phone },
+    { header: 'Address', value: (o) => o.shippingAddress?.line },
+    { header: 'City', value: (o) => o.shippingAddress?.city },
+    { header: 'State', value: (o) => o.shippingAddress?.state },
+    { header: 'Pincode', value: (o) => o.shippingAddress?.pincode },
+    {
+      header: 'Items',
+      value: (o) => (o.items || []).map((it) => `${it.title}${it.variant ? ` (${it.variant})` : ''} x${it.quantity || 1}`)
+    },
+    { header: 'Item Count', value: (o) => (o.items || []).reduce((n, it) => n + (it.quantity || 1), 0) },
+    { header: 'Subtotal', value: (o) => o.pricing?.subtotal },
+    { header: 'Coupon Code', value: (o) => o.pricing?.couponCode },
+    { header: 'Coupon Discount', value: (o) => o.pricing?.couponDiscount },
+    { header: 'Tier Discount', value: (o) => o.pricing?.tierDiscount },
+    { header: 'Gift Wrap Fee', value: (o) => o.pricing?.giftWrapFee },
+    { header: 'Shipping Fee', value: (o) => o.pricing?.shippingFee },
+    { header: 'Tax', value: (o) => o.pricing?.tax },
+    { header: 'Total', value: (o) => o.pricing?.total },
+    { header: 'Payment Method', value: (o) => o.payment?.method },
+    { header: 'Gift Wrap', value: (o) => (o.giftWrap ? 'Yes' : 'No') },
+    { header: 'Customer Note', value: (o) => o.customerNote }
   ];
 
   return (
@@ -531,20 +568,22 @@ export const OrdersPage = () => {
 
       {/* Orders Table */}
       <DataTable
+        exportColumns={orderExportColumns}
+        exportFileName="kapee-orders"
         columns={columns}
         data={filteredOrders}
         searchPlaceholder="Search by order ID, customer, city, phone..."
         extraHeaderActions={
-          <div className="flex items-center gap-2">
-            {/* CustomSelect fills its parent, so each one sits in a fixed-width box */}
-            <div className="w-44 shrink-0">
+          <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto sm:items-center">
+            {/* CustomSelect fills its parent, so each one sits in a fixed-width box (full width on phones) */}
+            <div className="min-w-0 sm:w-44 sm:shrink-0">
               <CustomSelect
                 value={activeStatusFilter}
                 onChange={(e) => setActiveStatusFilter(e.target.value)}
                 options={statusOptions}
               />
             </div>
-            <div className="w-40 shrink-0">
+            <div className="min-w-0 sm:w-40 sm:shrink-0">
               <CustomSelect
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
@@ -552,14 +591,16 @@ export const OrdersPage = () => {
               />
             </div>
             {dateFilter === 'custom' && (
-              <DateRangePicker
-                from={dateFrom}
-                to={dateTo}
-                onChange={(f, t) => {
-                  setDateFrom(f);
-                  setDateTo(t);
-                }}
-              />
+              <div className="col-span-2 sm:col-span-1">
+                <DateRangePicker
+                  from={dateFrom}
+                  to={dateTo}
+                  onChange={(f, t) => {
+                    setDateFrom(f);
+                    setDateTo(t);
+                  }}
+                />
+              </div>
             )}
             {hasFilters && (
               <button
@@ -644,7 +685,7 @@ export const OrdersPage = () => {
               </div>
 
               {/* Stepper bubbles */}
-              <div className="grid grid-cols-6 gap-1 text-center pt-2">
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-x-1 gap-y-2 text-center pt-2">
                 {['Pending', 'Confirmed', 'Packed', 'Shipped', 'Out for delivery', 'Delivered'].map((st, i) => {
                   const steps = ['Pending', 'Confirmed', 'Packed', 'Shipped', 'Out for delivery', 'Delivered'];
                   const curIdx = steps.indexOf(selectedOrder.status);
@@ -662,7 +703,7 @@ export const OrdersPage = () => {
             </div>
 
             {/* Customer & Shipping */}
-            <div className="grid grid-cols-2 gap-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="p-4 rounded-2xl bg-white dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700 space-y-1.5">
                 <span className="text-stone-400 font-bold uppercase text-[10px]">Customer Details</span>
                 <p className="font-bold text-stone-900 dark:text-stone-100 text-sm">{selectedOrder.customer.name}</p>
@@ -716,7 +757,7 @@ export const OrdersPage = () => {
                     {selectedOrder.source === 'Admin' ? 'Manual order' : 'Website order'} • Payment: {selectedOrder.payment?.method}
                   </span>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="font-semibold text-stone-700 dark:text-stone-300">Order Status</label>
                     <CustomSelect
@@ -866,7 +907,7 @@ export const OrdersPage = () => {
               <button
                 type="button"
                 onClick={() => setManualOrderOpen(false)}
-                className="px-4 py-2 text-xs font-semibold text-stone-500 hover:text-stone-800"
+                className="px-4 py-2 text-xs font-semibold text-stone-500 hover:text-stone-800 dark:hover:text-stone-100"
               >
                 Cancel
               </button>
@@ -899,7 +940,7 @@ export const OrdersPage = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="font-semibold text-stone-700 dark:text-stone-300">Phone Number *</label>
                 <input
@@ -933,7 +974,7 @@ export const OrdersPage = () => {
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1">
                 <label className="font-semibold text-stone-700 dark:text-stone-300">City *</label>
                 <input
@@ -1098,7 +1139,7 @@ export const OrdersPage = () => {
                           <button
                             type="button"
                             onClick={() => handleUpdateItemQty(idx, -1)}
-                            className="p-1 px-1.5 text-stone-500 hover:text-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700"
+                            className="p-1 px-1.5 text-stone-500 hover:text-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 dark:hover:text-stone-100"
                             title="Decrease quantity"
                           >
                             <Minus className="w-3 h-3" />
@@ -1109,7 +1150,7 @@ export const OrdersPage = () => {
                           <button
                             type="button"
                             onClick={() => handleUpdateItemQty(idx, 1)}
-                            className="p-1 px-1.5 text-stone-500 hover:text-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700"
+                            className="p-1 px-1.5 text-stone-500 hover:text-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 dark:hover:text-stone-100"
                             title="Increase quantity"
                           >
                             <Plus className="w-3 h-3" />
@@ -1252,7 +1293,7 @@ export const OrdersPage = () => {
             <div className="flex justify-end gap-3 pt-4 border-t">
               <button
                 onClick={() => setInvoicePreviewOrder(null)}
-                className="px-4 py-2 text-xs font-semibold text-stone-500 hover:text-stone-800"
+                className="px-4 py-2 text-xs font-semibold text-stone-500 hover:text-stone-800 dark:hover:text-stone-100"
               >
                 Close Preview
               </button>

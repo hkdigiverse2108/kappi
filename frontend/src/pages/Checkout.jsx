@@ -300,8 +300,8 @@ export const Checkout = () => {
                       />
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3">
-                      <div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      <div className="col-span-2 sm:col-span-1">
                         <label className="block font-bold text-ink mb-1">Pincode *</label>
                         <input
                           type="text"

@@ -56,11 +56,7 @@ const toPageForm = (section) => ({
   subjectOptionsText: (section?.subjectOptions || []).join('\n'),
   successTitle: section?.successTitle || '',
   successMessage: section?.successMessage || '',
-  successButtonText: section?.successButtonText || '',
-  seoTitle: section?.seoTitle || '',
-  seoDescription: section?.seoDescription || '',
-  ogTitle: section?.ogTitle || '',
-  ogDescription: section?.ogDescription || ''
+  successButtonText: section?.successButtonText || ''
 });
 
 export const ContactPageCMS = () => {
@@ -190,7 +186,7 @@ export const ContactPageCMS = () => {
       addToast({
         type: 'success',
         title: 'Contact Page Saved',
-        message: 'Headlines, message form and SEO details updated successfully!'
+        message: 'Headlines and message form updated successfully!'
       });
     } catch {
       // already reported by the store
@@ -378,65 +374,6 @@ export const ContactPageCMS = () => {
         </div>
       </div>
 
-      {/* SEO & Social Sharing */}
-      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/80 dark:border-stone-800 p-5 shadow-2xs space-y-4">
-        <h3 className="text-base font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
-          <ExternalLink className="w-4 h-4 text-emerald-deep dark:text-emerald-400" />
-          <span>SEO & Social Sharing</span>
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-stone-100 dark:border-stone-800">
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400">
-              Page Title (Browser Tab & Google)
-            </label>
-            <input
-              type="text"
-              value={headerForm.seoTitle}
-              onChange={(e) => setHeaderForm({ ...headerForm, seoTitle: e.target.value })}
-              placeholder="Contact Us | Customer Support | KAPEE Enterprise"
-              className="w-full px-3 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-xs focus:ring-2 focus:ring-[#0A5C55] focus:outline-hidden"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400">
-              Share Title (WhatsApp / Social)
-            </label>
-            <input
-              type="text"
-              value={headerForm.ogTitle}
-              onChange={(e) => setHeaderForm({ ...headerForm, ogTitle: e.target.value })}
-              placeholder="Contact Customer Support | KAPEE Enterprise"
-              className="w-full px-3 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-xs focus:ring-2 focus:ring-[#0A5C55] focus:outline-hidden"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400">
-              Meta Description
-            </label>
-            <textarea
-              rows={2}
-              value={headerForm.seoDescription}
-              onChange={(e) => setHeaderForm({ ...headerForm, seoDescription: e.target.value })}
-              placeholder="Get in touch with KAPEE Enterprise..."
-              className="w-full px-3 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-xs focus:ring-2 focus:ring-[#0A5C55] focus:outline-hidden"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400">
-              Share Description
-            </label>
-            <textarea
-              rows={2}
-              value={headerForm.ogDescription}
-              onChange={(e) => setHeaderForm({ ...headerForm, ogDescription: e.target.value })}
-              placeholder="Reach our support team via WhatsApp, call or email..."
-              className="w-full px-3 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-xs focus:ring-2 focus:ring-[#0A5C55] focus:outline-hidden"
-            />
-          </div>
-        </div>
-      </div>
-
       {/* Support Channel Cards CRUD */}
       <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/80 dark:border-stone-800 p-5 shadow-2xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -500,7 +437,7 @@ export const ContactPageCMS = () => {
                       <button
                         type="button"
                         onClick={() => handleOpenDrawer(card)}
-                        className="p-1 rounded-md text-stone-500 hover:text-emerald-deep hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors"
+                        className="p-1 rounded-md text-stone-500 hover:text-emerald-deep hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors dark:hover:text-emerald-300"
                         title="Edit Card"
                       >
                         <Edit className="w-3.5 h-3.5" />

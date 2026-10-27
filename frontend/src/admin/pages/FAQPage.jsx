@@ -21,18 +21,14 @@ import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { triggerKapeeCelebration } from '../components/common/Confetti';
 import { CustomSelect } from '../components/common/CustomSelect';
 
-// Page text edited in the "FAQ Page Text & SEO" box (questions and categories are saved separately)
+// Page text edited in the "FAQ Page Text" box (questions and categories are saved separately; SEO is in Admin > SEO)
 const PAGE_FIELDS = [
   { key: 'badge', label: 'Top Badge Text', placeholder: 'Help & Customer Support' },
   { key: 'heading', label: 'Main Headline (H1)', placeholder: 'Frequently Asked Questions' },
   { key: 'subheading', label: 'Subheading', placeholder: 'Everything you need to know about our products...', wide: true },
   { key: 'searchPlaceholder', label: 'Search Box Placeholder', placeholder: 'Search question (e.g. sneakers, water, shipping, COD)...', wide: true },
   { key: 'helpTitle', label: 'Help Box Heading', placeholder: 'Still Have a Question?' },
-  { key: 'helpText', label: 'Help Box Text', placeholder: 'Our customer happiness team is here to assist you...' },
-  { key: 'seoTitle', label: 'Page Title (Browser Tab & Google)', placeholder: 'Frequently Asked Questions (FAQs) | KAPEE Enterprise' },
-  { key: 'ogTitle', label: 'Share Title (WhatsApp / Social)', placeholder: 'Frequently Asked Questions (FAQs) | KAPEE Enterprise' },
-  { key: 'seoDescription', label: 'Meta Description', placeholder: 'Get answers to common questions about KAPEE...' },
-  { key: 'ogDescription', label: 'Share Description', placeholder: 'Answers about water-activated magic erasers, COD...' }
+  { key: 'helpText', label: 'Help Box Text', placeholder: 'Our customer happiness team is here to assist you...' }
 ];
 const toPageForm = (page) => Object.fromEntries(PAGE_FIELDS.map(({ key }) => [key, page?.[key] || '']));
 
@@ -209,7 +205,7 @@ export const FAQPage = () => {
       addToast({
         type: 'success',
         title: 'FAQs Saved',
-        message: 'FAQ page text and SEO saved successfully.'
+        message: 'FAQ page text saved successfully.'
       });
     } catch {
       // already reported by the store
@@ -234,7 +230,7 @@ export const FAQPage = () => {
             type="button"
             onClick={handleSavePageText}
             disabled={!pageForm}
-            title="Saves the page text & SEO below; questions save as soon as you add or edit them"
+            title="Saves the page text below; questions save as soon as you add or edit them"
             className="disabled:opacity-60 flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-deep hover:bg-emerald-800 text-white shadow-md hover:shadow-lg transition-all active:scale-95 whitespace-nowrap"
           >
             <Save className="w-4 h-4" />
@@ -335,7 +331,7 @@ export const FAQPage = () => {
                   setNewCatInputOpen(false);
                   setNewCatName('');
                 }}
-                className="p-1 text-stone-400 hover:text-stone-600 text-xs"
+                className="p-1 text-stone-400 hover:text-stone-600 text-xs dark:hover:text-stone-200"
               >
                 ✕
               </button>
@@ -381,7 +377,7 @@ export const FAQPage = () => {
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   onClick={() => handleOpenDrawer(faq)}
-                  className="p-1.5 rounded-lg text-stone-400 hover:text-emerald-deep hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                  className="p-1.5 rounded-lg text-stone-400 hover:text-emerald-deep hover:bg-emerald-50 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-300"
                   title="Edit question"
                 >
                   <Edit className="w-4 h-4" />
@@ -407,22 +403,22 @@ export const FAQPage = () => {
 
         {filteredFaqs.length === 0 && (
           <div className="p-12 text-center bg-white dark:bg-stone-900 rounded-2xl border">
-            <HelpCircle className="w-8 h-8 text-stone-300 mx-auto mb-2" />
+            <HelpCircle className="w-8 h-8 text-stone-300 dark:text-stone-600 mx-auto mb-2" />
             <p className="text-xs text-stone-500 font-medium">No FAQs found matching your search.</p>
           </div>
         )}
       </div>
 
-      {/* FAQ Page Text & SEO */}
+      {/* FAQ Page Text */}
       {pageForm && (
         <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/80 dark:border-stone-800 p-5 shadow-2xs space-y-4">
           <div>
             <h3 className="text-base font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
               <FileText className="w-4 h-4 text-emerald-deep dark:text-emerald-400" />
-              <span>FAQ Page Text & SEO</span>
+              <span>FAQ Page Text</span>
             </h3>
             <p className="text-xs text-stone-500 mt-0.5">
-              Headline, help box and Google / sharing details of the /faqs page. Click "Save FAQs" to apply.
+              Headline and help box of the /faqs page. Click "Save FAQs" to apply. Google / sharing details are in SEO.
             </p>
           </div>
 

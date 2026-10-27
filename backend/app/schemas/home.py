@@ -15,6 +15,7 @@ class HomeResponse(BaseModel):
     comparisonTable: dict | None = None
     ugcSection: dict | None = None
     homepageSections: list[dict] = []
+    shopSeo: dict | None = None
     bestSellers: list[dict] = []
     featuredReviews: list[dict] = []
 

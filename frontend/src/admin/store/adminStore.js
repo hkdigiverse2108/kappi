@@ -146,7 +146,7 @@ const initialHeroSlides = [
     image: '/hero_banner.png',
     primaryCtaText: 'Shop Magic Erasers',
     primaryCtaLink: '/shop',
-    secondaryCtaText: 'Explore Combos',
+    secondaryCtaText: 'Shop All Products',
     secondaryCtaLink: '/shop',
     pillText: 'Water Only • Zero Toxic Fumes',
     active: true,
@@ -742,6 +742,7 @@ export const useAdminStore = create(
       comparisonTable: null,
       ugcSection: null,
       homepageSections: [],
+      shopSeo: null,
       homeBestSellers: [],
       homeFeaturedReviews: [],
 
@@ -776,7 +777,7 @@ export const useAdminStore = create(
           });
       },
 
-      // Merge updates into an object section (seo, trustSection, bestSellersSection, reviewsSection, ugcSection)
+      // Merge updates into an object section (seo, shopSeo, trustSection, bestSellersSection, reviewsSection, ugcSection)
       updateHomeContent: (section, updates) => {
         set((state) => ({ [section]: { ...(state[section] || {}), ...updates } }));
         get().persistHomeSection(section);
@@ -1259,6 +1260,7 @@ export const useAdminStore = create(
         comparisonTable: state.comparisonTable,
         ugcSection: state.ugcSection,
         homepageSections: state.homepageSections,
+        shopSeo: state.shopSeo,
         homeBestSellers: state.homeBestSellers,
         homeFeaturedReviews: state.homeFeaturedReviews,
         // subscribers are not cached: they always come fresh from the backend (loadSubscribers)

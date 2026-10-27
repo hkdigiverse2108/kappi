@@ -24,7 +24,6 @@ import {
   ExternalLink,
   Save,
   Sliders,
-  HelpCircle,
   Link as LinkIcon,
   ArrowRight,
   UploadCloud,
@@ -88,14 +87,13 @@ export const HomepageManagerPage = () => {
     updateHowItWorksHeader,
     homepageSections,
     updateHomepageSection,
-    seo,
     trustSection,
     ugcSection,
     updateHomeContent,
     addToast
   } = useAdminStore();
 
-  const [activeTab, setActiveTab] = useState('hero'); // 'hero' | 'trust' | 'beforeAfter' | 'howItWorks' | 'comparison' | 'ugc' | 'seo' | 'sections'
+  const [activeTab, setActiveTab] = useState('hero'); // 'hero' | 'trust' | 'beforeAfter' | 'howItWorks' | 'comparison' | 'ugc' | 'sections'
 
   // Wet. Wipe. Wow. Header Form State
   const [howItWorksHeaderForm, setHowItWorksHeaderForm] = useState({
@@ -379,10 +377,9 @@ export const HomepageManagerPage = () => {
     });
   };
 
-  // ----------------- Section headers, best sellers, reviews, UGC & SEO -----------------
+  // ----------------- Section headers, best sellers, reviews & UGC -----------------
   const [trustHeaderForm, setTrustHeaderForm] = useSectionForm(trustSection);
   const [ugcForm, setUgcForm] = useSectionForm(ugcSection);
-  const [seoForm, setSeoForm] = useSectionForm(seo);
   const ugcInputRef = useRef(null);
   // Id of the photo being replaced (null = the upload adds a new photo)
   const ugcReplaceIdRef = useRef(null);
@@ -435,7 +432,6 @@ export const HomepageManagerPage = () => {
     updateComparisonTable(cmpHeaderForm);
     updateHomeContent('trustSection', trustHeaderForm);
     updateHomeContent('ugcSection', ugcForm);
-    updateHomeContent('seo', seoForm);
     triggerKapeeCelebration();
     addToast({
       type: 'success',
@@ -632,7 +628,6 @@ export const HomepageManagerPage = () => {
           { key: 'howItWorks', label: `Wet. Wipe. Wow. (${(howItWorksSteps || []).length})`, icon: CheckCircle2 },
           { key: 'comparison', label: `Comparison Table (${(comparisonTable?.rows || []).length})`, icon: Table },
           { key: 'ugc', label: `Instagram Grid (${(ugcSection?.images || []).length})`, icon: ImageIcon },
-          { key: 'seo', label: 'SEO', icon: HelpCircle },
           { key: 'sections', label: 'Section Visibility', icon: Sliders }
         ].map((tab) => {
           const Icon = tab.icon;
@@ -771,7 +766,7 @@ export const HomepageManagerPage = () => {
                     onChange={(e) => setHeroForm({ ...heroForm, showActionStrip: e.target.checked })}
                     className="sr-only peer"
                   />
-                  <div className="w-9 h-5 bg-stone-200 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#0A5C55]"></div>
+                  <div className="w-9 h-5 bg-stone-200 dark:bg-stone-700 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#0A5C55]"></div>
                 </label>
               </div>
 
@@ -856,7 +851,7 @@ export const HomepageManagerPage = () => {
                       type="text"
                       value={heroForm.secondaryCtaText}
                       onChange={(e) => setHeroForm({ ...heroForm, secondaryCtaText: e.target.value })}
-                      placeholder="Explore Combos & Save 50%"
+                      placeholder="Shop All Products"
                       className="w-full px-3 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-xs focus:ring-2 focus:ring-[#0A5C55] focus:outline-hidden"
                     />
                   </div>
@@ -868,7 +863,7 @@ export const HomepageManagerPage = () => {
                       type="text"
                       value={heroForm.secondaryCtaLink}
                       onChange={(e) => setHeroForm({ ...heroForm, secondaryCtaLink: e.target.value })}
-                      placeholder="/shop?category=combos"
+                      placeholder="/shop"
                       className="w-full px-3 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-xs focus:ring-2 focus:ring-[#0A5C55] focus:outline-hidden"
                     />
                   </div>
@@ -1038,7 +1033,7 @@ export const HomepageManagerPage = () => {
                         <button
                           type="button"
                           onClick={() => handleOpenBaDrawer(it)}
-                          className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-deep hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                          className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-deep hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors dark:hover:text-emerald-300"
                           title="Edit"
                         >
                           <Edit className="w-4 h-4" />
@@ -1059,13 +1054,13 @@ export const HomepageManagerPage = () => {
 
                     {/* Before & After Image Thumbnails */}
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="relative rounded-xl overflow-hidden aspect-video bg-stone-200 border border-stone-300 dark:border-stone-700">
+                      <div className="relative rounded-xl overflow-hidden aspect-video bg-stone-200 dark:bg-stone-800 border border-stone-300 dark:border-stone-700">
                         <img src={it.before} alt="Before" className="w-full h-full object-cover" />
                         <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-md bg-stone-900/80 text-white text-[9px] font-bold">
                           BEFORE
                         </span>
                       </div>
-                      <div className="relative rounded-xl overflow-hidden aspect-video bg-stone-200 border border-stone-300 dark:border-stone-700">
+                      <div className="relative rounded-xl overflow-hidden aspect-video bg-stone-200 dark:bg-stone-800 border border-stone-300 dark:border-stone-700">
                         <img src={it.after} alt="After" className="w-full h-full object-cover" />
                         <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-emerald-700 text-white text-[9px] font-bold">
                           AFTER
@@ -1308,7 +1303,7 @@ export const HomepageManagerPage = () => {
                     <button
                       type="button"
                       onClick={() => handleOpenCmpDrawer(row)}
-                      className="p-2 rounded-xl text-stone-500 hover:text-emerald-deep hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                      className="p-2 rounded-xl text-stone-500 hover:text-emerald-deep hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors dark:hover:text-emerald-300"
                       title="Edit Row"
                     >
                       <Edit className="w-4 h-4" />
@@ -1397,7 +1392,7 @@ export const HomepageManagerPage = () => {
                   <button
                     type="button"
                     onClick={() => handleOpenTrustDrawer(pillar)}
-                    className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-deep hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors"
+                    className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-deep hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors dark:hover:text-emerald-300"
                     title="Edit Card"
                   >
                     <Edit className="w-4 h-4" />
@@ -1543,8 +1538,8 @@ export const HomepageManagerPage = () => {
                       onClick={() => handleToggleStepActive(stepItem.id, stepItem.active !== false)}
                       className={`text-xs font-semibold flex items-center gap-1 ${
                         stepItem.active !== false
-                          ? 'text-emerald-600 hover:text-emerald-700'
-                          : 'text-stone-400 hover:text-stone-600'
+                          ? 'text-emerald-600 hover:text-emerald-700 dark:hover:text-emerald-300'
+                          : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
                       }`}
                     >
                       {stepItem.active !== false ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
@@ -1555,7 +1550,7 @@ export const HomepageManagerPage = () => {
                       <button
                         type="button"
                         onClick={() => handleOpenStepDrawer(stepItem)}
-                        className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-deep hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors"
+                        className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-deep hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors dark:hover:text-emerald-300"
                         title="Edit Step"
                       >
                         <Edit className="w-4 h-4" />
@@ -1653,89 +1648,77 @@ export const HomepageManagerPage = () => {
       )}
 
       {/* =========================================================
-          TAB: SEO
-         ========================================================= */}
-      {activeTab === 'seo' && (
-        <SettingsCard
-          title="Homepage SEO & Social Sharing"
-          description="Page title, meta tags, social preview and Google structured data for the homepage."
-          onSave={() => saveSection('seo', seoForm, 'Homepage SEO')}
-          saveLabel="Save SEO"
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-            <TextField className="sm:col-span-2" label="Page Title" value={seoForm.title} onChange={(v) => setSeoForm({ ...seoForm, title: v })} />
-            <TextField className="sm:col-span-2" label="Meta Description" value={seoForm.description} onChange={(v) => setSeoForm({ ...seoForm, description: v })} />
-            <TextField className="sm:col-span-2" label="Meta Keywords" value={seoForm.keywords} onChange={(v) => setSeoForm({ ...seoForm, keywords: v })} />
-            <TextField className="sm:col-span-2" label="Hidden H1 (for search engines)" value={seoForm.h1} onChange={(v) => setSeoForm({ ...seoForm, h1: v })} />
-            <TextField label="Canonical URL" value={seoForm.canonicalUrl} onChange={(v) => setSeoForm({ ...seoForm, canonicalUrl: v })} placeholder="https://kapee-enterprise.com/" />
-            <TextField label="Share Image URL" value={seoForm.ogImage} onChange={(v) => setSeoForm({ ...seoForm, ogImage: v })} />
-            <TextField label="Facebook / WhatsApp Title" value={seoForm.ogTitle} onChange={(v) => setSeoForm({ ...seoForm, ogTitle: v })} />
-            <TextField label="Facebook / WhatsApp Description" value={seoForm.ogDescription} onChange={(v) => setSeoForm({ ...seoForm, ogDescription: v })} />
-            <TextField label="Twitter Title" value={seoForm.twitterTitle} onChange={(v) => setSeoForm({ ...seoForm, twitterTitle: v })} />
-            <TextField label="Twitter Description" value={seoForm.twitterDescription} onChange={(v) => setSeoForm({ ...seoForm, twitterDescription: v })} />
-            <TextField label="Store Name" value={seoForm.storeName} onChange={(v) => setSeoForm({ ...seoForm, storeName: v })} />
-            <TextField label="Store URL" value={seoForm.storeUrl} onChange={(v) => setSeoForm({ ...seoForm, storeUrl: v })} />
-            <TextField className="sm:col-span-2" label="Store Description" value={seoForm.storeDescription} onChange={(v) => setSeoForm({ ...seoForm, storeDescription: v })} />
-            <TextField label="Price Range" value={seoForm.priceRange} onChange={(v) => setSeoForm({ ...seoForm, priceRange: v })} placeholder="₹149 - ₹899" />
-            <TextField label="Average Rating" value={seoForm.ratingValue} onChange={(v) => setSeoForm({ ...seoForm, ratingValue: v })} placeholder="4.9" />
-            <TextField label="Total Review Count" value={seoForm.reviewCount} onChange={(v) => setSeoForm({ ...seoForm, reviewCount: v })} placeholder="2960" />
-          </div>
-        </SettingsCard>
-      )}
-
-      {/* =========================================================
           TAB 4: SECTION VISIBILITY TOGGLES
          ========================================================= */}
       {activeTab === 'sections' && (
-        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/80 dark:border-stone-800 p-6 space-y-5 shadow-2xs max-w-3xl">
-          <div>
-            <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-              Homepage Section Visibility Toggles
-            </h2>
-            <p className="text-xs text-stone-500 mt-0.5">
-              Turn any section of your public homepage ON or OFF instantly.
+        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/80 dark:border-stone-800 p-4 sm:p-6 space-y-5 shadow-2xs max-w-3xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
+                Homepage Section Visibility
+              </h2>
+              <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                Turn any section of your public homepage ON or OFF. Changes are saved instantly.
+              </p>
+            </div>
+            <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 whitespace-nowrap">
+              {(homepageSections || []).filter((sec) => sec.active !== false).length} / {(homepageSections || []).length} visible
+            </span>
+          </div>
+
+          {(homepageSections || []).length === 0 ? (
+            <p className="py-10 text-center text-xs text-stone-500 dark:text-stone-400 border border-dashed border-stone-200 dark:border-stone-700 rounded-xl">
+              No homepage sections found.
             </p>
-          </div>
+          ) : (
+            <div className="divide-y divide-stone-200 dark:divide-stone-800 border border-stone-200 dark:border-stone-800 rounded-xl overflow-hidden text-xs">
+              {homepageSections.map((sec, idx) => {
+                const visible = sec.active !== false;
+                return (
+                  <div
+                    key={sec.id}
+                    className="p-3 sm:p-4 flex items-center justify-between gap-3 bg-white dark:bg-stone-900 hover:bg-stone-50/60 dark:hover:bg-stone-800/40 transition-colors"
+                  >
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                      <span className="w-6 shrink-0 text-stone-400 font-mono text-[11px]">#{idx + 1}</span>
+                      <div className="min-w-0">
+                        <p className={`font-bold text-sm truncate ${visible ? 'text-stone-800 dark:text-stone-200' : 'text-stone-400 dark:text-stone-500 line-through'}`}>
+                          {sec.name}
+                        </p>
+                        <p className={`text-[11px] font-semibold ${visible ? 'text-emerald-700 dark:text-emerald-400' : 'text-stone-400'}`}>
+                          {visible ? 'Visible on homepage' : 'Hidden from homepage'}
+                        </p>
+                      </div>
+                    </div>
 
-          <div className="divide-y border border-stone-200 dark:border-stone-800 rounded-xl overflow-hidden text-xs">
-            {(homepageSections || []).map((sec, idx) => (
-              <div
-                key={sec.id}
-                className="p-4 flex items-center justify-between bg-white dark:bg-stone-900 hover:bg-stone-50/60 dark:hover:bg-stone-800/40 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="w-6 text-stone-400 font-mono text-[11px]">#{idx + 1}</span>
-                  <div>
-                    <p className="font-bold text-stone-800 dark:text-stone-200 text-sm">
-                      {sec.name}
-                    </p>
-                    <p className="text-[11px] text-stone-400">
-                      ID: {sec.id}
-                    </p>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={visible}
+                      aria-label={`${visible ? 'Hide' : 'Show'} ${sec.name}`}
+                      onClick={() => {
+                        updateHomepageSection(sec.id, { active: !visible });
+                        addToast({
+                          type: 'info',
+                          title: 'Section Visibility Updated',
+                          message: `${sec.name} is now ${!visible ? 'Visible' : 'Hidden'} on the storefront.`
+                        });
+                      }}
+                      className={`relative shrink-0 w-11 h-6 rounded-full transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+                        visible ? 'bg-emerald-600' : 'bg-stone-300 dark:bg-stone-700'
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                          visible ? 'translate-x-5' : ''
+                        }`}
+                      />
+                    </button>
                   </div>
-                </div>
-
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={sec.active !== false}
-                    onChange={(e) => {
-                      updateHomepageSection(sec.id, { active: e.target.checked });
-                      addToast({
-                        type: 'info',
-                        title: 'Section Visibility Updated',
-                        message: `${sec.name} is now ${e.target.checked ? 'Visible' : 'Hidden'} on the storefront.`
-                      });
-                    }}
-                    className="w-5 h-5 rounded accent-emerald-700 text-emerald-deep cursor-pointer"
-                  />
-                  <span className={`font-semibold text-xs ${sec.active !== false ? 'text-emerald-700' : 'text-stone-400'}`}>
-                    {sec.active !== false ? 'Visible' : 'Hidden'}
-                  </span>
-                </label>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
@@ -1932,7 +1915,7 @@ export const HomepageManagerPage = () => {
             </div>
 
             {baItemForm.before && (
-              <div className="relative rounded-xl overflow-hidden aspect-video bg-stone-200 border">
+              <div className="relative rounded-xl overflow-hidden aspect-video bg-stone-200 dark:bg-stone-800 border">
                 <img src={baItemForm.before} alt="Before preview" className="w-full h-full object-cover" />
               </div>
             )}
@@ -1963,7 +1946,7 @@ export const HomepageManagerPage = () => {
             </div>
 
             {baItemForm.after && (
-              <div className="relative rounded-xl overflow-hidden aspect-video bg-stone-200 border">
+              <div className="relative rounded-xl overflow-hidden aspect-video bg-stone-200 dark:bg-stone-800 border">
                 <img src={baItemForm.after} alt="After preview" className="w-full h-full object-cover" />
               </div>
             )}

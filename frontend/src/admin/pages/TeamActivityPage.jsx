@@ -19,6 +19,7 @@ import { SideDrawer } from '../components/common/SideDrawer';
 import { triggerKapeeCelebration } from '../components/common/Confetti';
 import { CustomSelect } from '../components/common/CustomSelect';
 import { confirmDelete } from '../../store/useConfirmStore';
+import { downloadCSV, csvDate } from '../lib/csv';
 
 const ROLE_OPTIONS = [
   { value: 'Admin', label: 'Admin (Full Access)' },
@@ -98,7 +99,7 @@ export const TeamActivityPage = () => {
             className={`pb-3 px-4 text-xs sm:text-sm font-semibold relative transition-colors ${
               activeTab === tab.key
                 ? 'text-emerald-deep dark:text-emerald-300'
-                : 'text-stone-500 hover:text-stone-800'
+                : 'text-stone-500 hover:text-stone-800 dark:hover:text-stone-100'
             }`}
           >
             <span>{tab.label}</span>
@@ -175,13 +176,13 @@ export const TeamActivityPage = () => {
             </thead>
             <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
               {rolesMatrix.map((row, idx) => (
-                <tr key={idx} className="hover:bg-stone-50/50">
+                <tr key={idx} className="hover:bg-stone-50/50 dark:hover:bg-stone-800/40">
                   <td className="p-3.5 font-semibold text-stone-800 dark:text-stone-200">{row.module}</td>
-                  <td className="p-3.5 text-center">{row.superAdmin ? <Check className="w-4 h-4 text-emerald-600 mx-auto" /> : <X className="w-4 h-4 text-stone-300 mx-auto" />}</td>
-                  <td className="p-3.5 text-center">{row.admin ? <Check className="w-4 h-4 text-emerald-600 mx-auto" /> : <X className="w-4 h-4 text-stone-300 mx-auto" />}</td>
-                  <td className="p-3.5 text-center">{row.manager ? <Check className="w-4 h-4 text-emerald-600 mx-auto" /> : <X className="w-4 h-4 text-stone-300 mx-auto" />}</td>
-                  <td className="p-3.5 text-center">{row.support ? <Check className="w-4 h-4 text-emerald-600 mx-auto" /> : <X className="w-4 h-4 text-stone-300 mx-auto" />}</td>
-                  <td className="p-3.5 text-center">{row.viewer ? <Check className="w-4 h-4 text-emerald-600 mx-auto" /> : <X className="w-4 h-4 text-stone-300 mx-auto" />}</td>
+                  <td className="p-3.5 text-center">{row.superAdmin ? <Check className="w-4 h-4 text-emerald-600 mx-auto" /> : <X className="w-4 h-4 text-stone-300 dark:text-stone-600 mx-auto" />}</td>
+                  <td className="p-3.5 text-center">{row.admin ? <Check className="w-4 h-4 text-emerald-600 mx-auto" /> : <X className="w-4 h-4 text-stone-300 dark:text-stone-600 mx-auto" />}</td>
+                  <td className="p-3.5 text-center">{row.manager ? <Check className="w-4 h-4 text-emerald-600 mx-auto" /> : <X className="w-4 h-4 text-stone-300 dark:text-stone-600 mx-auto" />}</td>
+                  <td className="p-3.5 text-center">{row.support ? <Check className="w-4 h-4 text-emerald-600 mx-auto" /> : <X className="w-4 h-4 text-stone-300 dark:text-stone-600 mx-auto" />}</td>
+                  <td className="p-3.5 text-center">{row.viewer ? <Check className="w-4 h-4 text-emerald-600 mx-auto" /> : <X className="w-4 h-4 text-stone-300 dark:text-stone-600 mx-auto" />}</td>
                 </tr>
               ))}
             </tbody>
@@ -195,8 +196,21 @@ export const TeamActivityPage = () => {
           <div className="p-4 border-b flex items-center justify-between text-xs">
             <span className="font-bold text-stone-800 dark:text-stone-200">Security Audit Trail</span>
             <button
-              onClick={() => addToast({ type: 'info', title: 'Export Generated', message: 'Downloading activity logs CSV.' })}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-stone-600 hover:bg-stone-50 font-semibold"
+              onClick={() =>
+                downloadCSV(
+                  'kapee-audit-log',
+                  [
+                    { header: 'Date & Time', value: (log) => csvDate(log.timestamp) },
+                    { header: 'User', value: (log) => log.user },
+                    { header: 'Role', value: (log) => log.role },
+                    { header: 'Action', value: (log) => log.action },
+                    { header: 'Details', value: (log) => log.details }
+                  ],
+                  activityLogs
+                )
+              }
+              disabled={!activityLogs.length}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 font-semibold"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export Audit Log</span>
@@ -205,12 +219,12 @@ export const TeamActivityPage = () => {
 
           <div className="divide-y divide-stone-100 dark:divide-stone-800 text-xs">
             {activityLogs.map((log) => (
-              <div key={log.id} className="p-4 flex items-center justify-between hover:bg-stone-50/50">
+              <div key={log.id} className="p-4 flex items-center justify-between hover:bg-stone-50/50 dark:hover:bg-stone-800/40">
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-stone-900 dark:text-stone-100">{log.user}</span>
                     <span className="text-[10px] text-stone-400">({log.role})</span>
-                    <span className="px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-emerald-deep font-semibold text-[10px]">
+                    <span className="px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-emerald-deep dark:text-emerald-300 font-semibold text-[10px]">
                       {log.action}
                     </span>
                   </div>
@@ -240,7 +254,7 @@ export const TeamActivityPage = () => {
       >
         <div className="space-y-4 text-xs">
           <div className="space-y-1">
-            <label className="font-semibold text-stone-700">Teammate Full Name *</label>
+            <label className="font-semibold text-stone-700 dark:text-stone-300">Teammate Full Name *</label>
             <input
               type="text"
               value={userForm.name}
@@ -249,7 +263,7 @@ export const TeamActivityPage = () => {
             />
           </div>
           <div className="space-y-1">
-            <label className="font-semibold text-stone-700">Email Address *</label>
+            <label className="font-semibold text-stone-700 dark:text-stone-300">Email Address *</label>
             <input
               type="email"
               value={userForm.email}
@@ -258,7 +272,7 @@ export const TeamActivityPage = () => {
             />
           </div>
           <div className="space-y-1">
-            <label className="font-semibold text-stone-700">Role</label>
+            <label className="font-semibold text-stone-700 dark:text-stone-300">Role</label>
             <CustomSelect
               value={userForm.role}
               onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}

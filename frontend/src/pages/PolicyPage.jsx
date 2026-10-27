@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Shield, Clock, FileText, ArrowRight } from 'lucide-react';
-import { Helmet } from 'react-helmet-async';
 import { useAdminStore } from '../admin/store/adminStore';
 
 export const PolicyPage = () => {
@@ -29,12 +28,6 @@ export const PolicyPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
-      <Helmet>
-        <title>{`${policy.title} | KAPEE Enterprise`}</title>
-        <meta name="description" content={`Read the official ${policy.title.toLowerCase()} of KAPEE Enterprise. Clear information regarding orders, customer rights, and store policies.`} />
-        <link rel="canonical" href={`https://kapee-enterprise.com/policies/${policy.slug}`} />
-      </Helmet>
-
       {/* Header */}
       <div className="border-b border-emerald-soft pb-6 space-y-2">
         <span className="text-xs font-bold uppercase tracking-widest text-emerald">

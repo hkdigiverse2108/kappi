@@ -60,6 +60,7 @@ export const CommandPalette = () => {
     { label: 'CMS Banners & Bar', path: '/admin/cms/banners', icon: FileText, category: 'CMS' },
     { label: 'Inquiries', path: '/admin/marketing', icon: Megaphone, category: 'Pages' },
     { label: 'Analytics Reports', path: '/admin/reports', icon: BarChart3, category: 'Pages' },
+    { label: 'SEO (all pages)', path: '/admin/seo', icon: Search, category: 'Pages' },
   ];
 
   const quickActions = [
@@ -141,7 +142,7 @@ export const CommandPalette = () => {
                           <p className="text-[10px] text-stone-400 uppercase tracking-wider">{item.category}</p>
                         </div>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-stone-300 group-hover:text-emerald-600 transition-all opacity-0 group-hover:opacity-100 group-hover:translate-x-1" />
+                      <ArrowRight className="w-4 h-4 text-stone-300 dark:text-stone-600 group-hover:text-emerald-600 transition-all opacity-0 group-hover:opacity-100 group-hover:translate-x-1" />
                     </button>
                   );
                 })

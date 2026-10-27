@@ -241,24 +241,9 @@ const ProductDetailView = ({ product, reviews, coupons, fbtCandidates, youMayAls
   return (
     <div className="space-y-12 pb-24">
       <Helmet>
-        <title>{`${product.title} | Buy Online at Best Price ₹${product.basePrice} | KAPEE Enterprise`}</title>
-        <meta name="description" content={`${product.subtitle} Free delivery & COD available across India.`} />
-        <link rel="canonical" href={`https://kapee-enterprise.com/product/${product.slug}`} />
-
-        {/* OpenGraph / WhatsApp */}
-        <meta property="og:type" content="product" />
-        <meta property="og:url" content={`https://kapee-enterprise.com/product/${product.slug}`} />
-        <meta property="og:title" content={`${product.title} | KAPEE Enterprise`} />
-        <meta property="og:description" content={product.subtitle} />
-        <meta property="og:image" content={product.images[0]?.startsWith('http') ? product.images[0] : `https://kapee-enterprise.com${product.images[0]}`} />
+        {/* Product price for Facebook / WhatsApp shops (title, description & image come from RouteSeo) */}
         <meta property="product:price:amount" content={String(product.basePrice)} />
         <meta property="product:price:currency" content="INR" />
-
-        {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${product.title} | KAPEE Enterprise`} />
-        <meta name="twitter:description" content={product.subtitle} />
-        <meta name="twitter:image" content={product.images[0]?.startsWith('http') ? product.images[0] : `https://kapee-enterprise.com${product.images[0]}`} />
 
         {/* Product JSON-LD Schema */}
         <script type="application/ld+json">
@@ -483,7 +468,7 @@ const ProductDetailView = ({ product, reviews, coupons, fbtCandidates, youMayAls
                     </span>
                   )}
                 </div>
-                <div className="grid grid-cols-4 gap-2 pt-1.5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1.5">
                   {product.variants.map((v, idx) => (
                     <button
                       key={v.id}
@@ -887,7 +872,7 @@ const ProductDetailView = ({ product, reviews, coupons, fbtCandidates, youMayAls
 
                 {/* Current product (This item) */}
                 <div className="flex items-center gap-3 p-3.5 rounded-xl bg-emerald-soft/25 border-2 border-emerald/30 flex-1 min-w-0 transition-all">
-                  <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-white border border-gray-200 shrink-0 shadow-2xs">
+                  <div className="w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-white border border-gray-200 shrink-0 shadow-2xs">
                     <img src={product.images[0]} alt={product.title} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -915,7 +900,7 @@ const ProductDetailView = ({ product, reviews, coupons, fbtCandidates, youMayAls
                         ? 'bg-emerald-soft/15 border-emerald/30 shadow-2xs'
                         : 'bg-gray-50/70 border-gray-200 opacity-60'
                     }`}>
-                      <div className={`w-18 h-18 sm:w-20 sm:h-20 rounded-xl overflow-hidden border shrink-0 shadow-2xs ${fbtSelected[idx] ? 'border-emerald/30 bg-white' : 'border-gray-200 bg-gray-100'}`}>
+                      <div className={`w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-xl overflow-hidden border shrink-0 shadow-2xs ${fbtSelected[idx] ? 'border-emerald/30 bg-white' : 'border-gray-200 bg-gray-100'}`}>
                         <img src={c.images[0]} alt={c.title} className={`w-full h-full object-cover transition-opacity ${fbtSelected[idx] ? 'opacity-100' : 'opacity-40'}`} />
                       </div>
                       <div className="flex-1 min-w-0">

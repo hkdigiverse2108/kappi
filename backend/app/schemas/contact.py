@@ -31,8 +31,12 @@ class ContactContent(BaseModel):
     successButtonText: str = ""
     seoTitle: str = ""
     seoDescription: str = ""
+    seoKeywords: str = ""
     ogTitle: str = ""
     ogDescription: str = ""
+    twitterTitle: str = ""
+    twitterDescription: str = ""
+    ogImage: str = ""
 
 
 class EnquiryCreate(BaseModel):

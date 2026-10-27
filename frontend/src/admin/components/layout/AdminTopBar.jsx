@@ -15,13 +15,14 @@ import {
   ChevronDown,
   Palette,
   Check,
-  Eye
+  Eye,
+  Menu
 } from 'lucide-react';
 import { useAdminStore } from '../../store/adminStore';
 import { useClickOutside } from '../../../hooks/useClickOutside';
 import { istFriendly } from '../../../utils/istTime';
 
-export const AdminTopBar = () => {
+export const AdminTopBar = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const {
     sidebarCollapsed,
@@ -55,20 +56,31 @@ export const AdminTopBar = () => {
 
   return (
     <header
-      className={`fixed top-0 right-0 z-20 h-16 bg-bg/90 backdrop-blur-md border-b border-border transition-all duration-300 px-6 flex items-center justify-between shadow-xs ${
-        sidebarCollapsed ? 'left-20' : 'left-64'
+      className={`fixed top-0 right-0 z-20 h-16 bg-bg/90 backdrop-blur-md border-b border-border transition-all duration-300 px-3 sm:px-6 gap-2 flex items-center justify-between shadow-xs left-0 ${
+        sidebarCollapsed ? 'lg:left-20' : 'lg:left-64'
       }`}
     >
       {/* Search trigger */}
-      <div className="flex items-center gap-4 flex-1 max-w-md">
+      <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0 max-w-md">
+        {/* Mobile sidebar toggle */}
+        <button
+          type="button"
+          onClick={onMenuClick}
+          className="lg:hidden p-2 rounded-xl text-muted hover:text-text hover:bg-surface-tint transition-colors shrink-0"
+          aria-label="Open sidebar"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
         <button
           type="button"
           onClick={() => setCommandPaletteOpen(true)}
-          className="w-full flex items-center justify-between px-3.5 py-2 bg-surface-2 dark:bg-[#112A26] hover:border-primary/40 rounded-xl text-xs text-muted dark:text-[#8FA8A3] transition-all border border-border focus:outline-none focus:ring-3 focus:ring-[var(--ring)] cursor-pointer"
+          className="w-full min-w-0 flex items-center justify-between px-3.5 py-2 bg-surface-2 dark:bg-[#112A26] hover:border-primary/40 rounded-xl text-xs text-muted dark:text-[#8FA8A3] transition-all border border-border focus:outline-none focus:ring-3 focus:ring-[var(--ring)] cursor-pointer"
         >
-          <div className="flex items-center gap-2.5">
-            <Search className="w-4 h-4 text-muted" />
-            <span className="truncate">Search products, orders, customers...</span>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Search className="w-4 h-4 text-muted shrink-0" />
+            <span className="truncate sm:hidden">Search...</span>
+            <span className="truncate hidden sm:inline">Search products, orders, customers...</span>
           </div>
           <kbd className="hidden sm:inline-flex items-center gap-1 font-mono text-[10px] bg-surface border border-border px-2 py-0.5 rounded shadow-2xs font-semibold text-text-2">
             Ctrl K
@@ -77,7 +89,7 @@ export const AdminTopBar = () => {
       </div>
 
       {/* Right Controls */}
-      <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex items-center gap-1 sm:gap-3 shrink-0">
         {/* Quick New Button */}
         <div className="relative" ref={quickNewRef}>
           <button
@@ -179,7 +191,7 @@ export const AdminTopBar = () => {
           </button>
 
           {notificationsOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-surface dark:bg-[#0C1F1C] rounded-2xl shadow-xl border border-border z-20 overflow-hidden">
+            <div className="fixed left-3 right-3 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-80 bg-surface dark:bg-[#0C1F1C] rounded-2xl shadow-xl border border-border z-20 overflow-hidden">
               <div className="px-5 py-4 border-b border-border">
                 <h4 className="text-sm font-bold text-text">Notifications</h4>
               </div>
@@ -270,7 +282,7 @@ export const AdminTopBar = () => {
 
           {profileOpen && (
             <>
-              <div className="absolute right-0 mt-2 w-64 bg-surface dark:bg-[#0C1F1C] rounded-2xl shadow-lg border border-border p-3 z-20 text-xs">
+              <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-1.5rem)] bg-surface dark:bg-[#0C1F1C] rounded-2xl shadow-lg border border-border p-3 z-20 text-xs">
                 <div className="pb-3 border-b border-border">
                   <p className="font-bold text-text">{currentUser.name}</p>
                   <p className="text-[11px] text-muted">{currentUser.email}</p>

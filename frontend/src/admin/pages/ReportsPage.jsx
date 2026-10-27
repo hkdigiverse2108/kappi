@@ -1,17 +1,39 @@
 import React, { useState } from 'react';
 import { BarChart3, Download, TrendingUp, IndianRupee, Truck, Percent, Calendar } from 'lucide-react';
 import { useAdminStore } from '../store/adminStore';
+import { downloadCSV, csvDate } from '../lib/csv';
 
 export const ReportsPage = () => {
-  const { addToast } = useAdminStore();
+  const { addToast, orders } = useAdminStore();
   const [reportType, setReportType] = useState('sales');
 
+  // Sales ledger: one row per order with its full price breakdown
   const handleDownloadReport = () => {
-    addToast({
-      type: 'info',
-      title: 'Generating Report Export',
-      message: 'Compiling financial and inventory ledger to CSV.'
-    });
+    if (!orders.length) {
+      addToast({ type: 'info', title: 'Nothing to Export', message: 'There are no orders yet.' });
+      return;
+    }
+    downloadCSV(
+      'kapee-sales-ledger',
+      [
+        { header: 'Order Number', value: (o) => o.orderNumber },
+        { header: 'Order Date', value: (o) => csvDate(o.createdAt) },
+        { header: 'Status', value: (o) => o.status },
+        { header: 'Customer', value: (o) => o.customer?.name },
+        { header: 'City', value: (o) => o.shippingAddress?.city },
+        { header: 'State', value: (o) => o.shippingAddress?.state },
+        { header: 'Payment Method', value: (o) => o.payment?.method },
+        { header: 'Subtotal', value: (o) => o.pricing?.subtotal },
+        { header: 'Coupon Discount', value: (o) => o.pricing?.couponDiscount },
+        { header: 'Tier Discount', value: (o) => o.pricing?.tierDiscount },
+        { header: 'Gift Wrap Fee', value: (o) => o.pricing?.giftWrapFee },
+        { header: 'Shipping Fee', value: (o) => o.pricing?.shippingFee },
+        { header: 'Tax', value: (o) => o.pricing?.tax },
+        { header: 'Total', value: (o) => o.pricing?.total }
+      ],
+      orders
+    );
+    addToast({ type: 'success', title: 'Report Downloaded', message: `Exported ${orders.length} order(s) to CSV.` });
   };
 
   return (
@@ -31,7 +53,7 @@ export const ReportsPage = () => {
           className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-deep text-white hover:bg-emerald-800 shadow-sm"
         >
           <Download className="w-4 h-4" />
-          <span>Download Audit Ledger (CSV)</span>
+          <span>Download Sales Ledger (CSV)</span>
         </button>
       </div>
 

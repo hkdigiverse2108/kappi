@@ -255,14 +255,14 @@ export const DeliveryPaymentsPage = () => {
                   <label className="font-semibold text-stone-700 dark:text-stone-300">
                     Mode
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
                       type="button"
                       onClick={() => setDelhiveryForm({ ...delhiveryForm, mode: 'Live' })}
                       className={`py-2.5 px-3 rounded-xl border text-center font-semibold transition-all ${
                         delhiveryForm.mode === 'Live'
                           ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 ring-1 ring-emerald-600'
-                          : 'border-stone-200 dark:border-stone-800 text-stone-500 hover:bg-stone-50'
+                          : 'border-stone-200 dark:border-stone-800 text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-800'
                       }`}
                     >
                       ● Live Production
@@ -273,7 +273,7 @@ export const DeliveryPaymentsPage = () => {
                       className={`py-2.5 px-3 rounded-xl border text-center font-semibold transition-all ${
                         delhiveryForm.mode === 'Sandbox'
                           ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500'
-                          : 'border-stone-200 dark:border-stone-800 text-stone-500 hover:bg-stone-50'
+                          : 'border-stone-200 dark:border-stone-800 text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-800'
                       }`}
                     >
                       ○ Sandbox / Test
@@ -312,7 +312,7 @@ export const DeliveryPaymentsPage = () => {
                     <button
                       type="button"
                       onClick={() => setShowDelhiveryToken(!showDelhiveryToken)}
-                      className="p-1.5 text-stone-400 hover:text-stone-600 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-700"
+                      className="p-1.5 text-stone-400 hover:text-stone-600 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 dark:hover:bg-stone-700 dark:hover:text-stone-200"
                       title={showDelhiveryToken ? 'Hide token' : 'Show token'}
                     >
                       {showDelhiveryToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -320,7 +320,7 @@ export const DeliveryPaymentsPage = () => {
                     <button
                       type="button"
                       onClick={() => handleCopy(delhiveryForm.apiToken, 'Delhivery API Token')}
-                      className="p-1.5 text-stone-400 hover:text-emerald-deep rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                      className="p-1.5 text-stone-400 hover:text-emerald-deep rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-300"
                       title="Copy token"
                     >
                       <Copy className="w-4 h-4" />
@@ -416,14 +416,14 @@ export const DeliveryPaymentsPage = () => {
                   <label className="font-semibold text-stone-700 dark:text-stone-300">
                     Mode
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
                       type="button"
                       onClick={() => setRazorpayForm({ ...razorpayForm, mode: 'Live' })}
                       className={`py-2.5 px-3 rounded-xl border text-center font-semibold transition-all ${
                         razorpayForm.mode === 'Live'
                           ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 ring-1 ring-emerald-600'
-                          : 'border-stone-200 dark:border-stone-800 text-stone-500 hover:bg-stone-50'
+                          : 'border-stone-200 dark:border-stone-800 text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-800'
                       }`}
                     >
                       ● Live Mode
@@ -434,7 +434,7 @@ export const DeliveryPaymentsPage = () => {
                       className={`py-2.5 px-3 rounded-xl border text-center font-semibold transition-all ${
                         razorpayForm.mode === 'Test'
                           ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-900 dark:text-blue-300 ring-1 ring-blue-600'
-                          : 'border-stone-200 dark:border-stone-800 text-stone-500 hover:bg-stone-50'
+                          : 'border-stone-200 dark:border-stone-800 text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-800'
                       }`}
                     >
                       ○ Test Mode
@@ -457,7 +457,7 @@ export const DeliveryPaymentsPage = () => {
                     <button
                       type="button"
                       onClick={() => handleCopy(razorpayForm.keyId, 'Key ID')}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-stone-400 hover:text-blue-600 rounded-lg hover:bg-stone-100"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-stone-400 hover:text-blue-600 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800"
                       title="Copy Key ID"
                     >
                       <Copy className="w-4 h-4" />
@@ -483,7 +483,7 @@ export const DeliveryPaymentsPage = () => {
                     <button
                       type="button"
                       onClick={() => setShowRazorpaySecret(!showRazorpaySecret)}
-                      className="p-1.5 text-stone-400 hover:text-stone-600 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-700"
+                      className="p-1.5 text-stone-400 hover:text-stone-600 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 dark:hover:bg-stone-700 dark:hover:text-stone-200"
                       title={showRazorpaySecret ? 'Hide secret' : 'Show secret'}
                     >
                       {showRazorpaySecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { AnnouncementBar } from './components/layout/AnnouncementBar';
 import { Navbar } from './components/layout/Navbar';
@@ -12,12 +12,12 @@ import { QuickViewModal } from './components/product/QuickViewModal';
 import { FloatingActions } from './components/common/FloatingActions';
 import { LeafLoader } from './components/common/LeafLoader';
 import { ScrollToTop } from './components/common/ScrollToTop';
+import { RouteSeo } from './components/seo/RouteSeo';
 
 // Pages
 import Home from './pages/Home';
 import Shop from './pages/Shop';
 import ProductDetail from './pages/ProductDetail';
-import Combos from './pages/Combos';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
@@ -74,6 +74,7 @@ const AppLayout = () => {
     <div className="flex flex-col min-h-screen bg-ivory text-ink selection:bg-gold-light/40 selection:text-emerald-deep">
       <ScrollProgressBar />
       <ScrollToTop />
+      <RouteSeo />
       
       {/* Global Modals & Drawers */}
       <CartDrawer />
@@ -108,7 +109,6 @@ const AppLayout = () => {
           <Route path="/shop" element={<Shop />} />
           <Route path="/product/:slug" element={<ProductDetail />} />
           <Route path="/products/:slug" element={<ProductDetail />} />
-          <Route path="/combos" element={<Navigate to="/shop?category=combos" replace />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/order-success" element={<OrderSuccess />} />

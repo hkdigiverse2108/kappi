@@ -103,7 +103,7 @@ export const GuidesPage = () => {
             className="bg-white dark:bg-stone-900 rounded-2xl border overflow-hidden shadow-2xs space-y-3 flex flex-col justify-between"
           >
             <div>
-              <div className="h-40 bg-stone-100 relative">
+              <div className="h-40 bg-stone-100 dark:bg-stone-800 relative">
                 <img src={g.image} alt="" className="w-full h-full object-cover" />
                 <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full bg-emerald-deep text-white text-[10px] font-bold">
                   {g.category}
@@ -118,7 +118,7 @@ export const GuidesPage = () => {
             </div>
 
             <div className="px-4 py-2.5 border-t flex items-center justify-between text-xs">
-              <span className="text-emerald-deep font-semibold">Published</span>
+              <span className="text-emerald-deep dark:text-emerald-300 font-semibold">Published</span>
               <button
                 onClick={() =>
                   confirmDelete({
@@ -153,7 +153,7 @@ export const GuidesPage = () => {
       >
         <div className="space-y-4 text-xs">
           <div className="space-y-1">
-            <label className="font-semibold text-stone-700">Guide Headline *</label>
+            <label className="font-semibold text-stone-700 dark:text-stone-300">Guide Headline *</label>
             <input
               type="text"
               value={guideForm.title}
@@ -161,9 +161,9 @@ export const GuidesPage = () => {
               className="w-full px-3 py-2 border rounded-xl"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="font-semibold text-stone-700">Category Tag</label>
+              <label className="font-semibold text-stone-700 dark:text-stone-300">Category Tag</label>
               <input
                 type="text"
                 value={guideForm.category}
@@ -172,7 +172,7 @@ export const GuidesPage = () => {
               />
             </div>
             <div className="space-y-1">
-              <label className="font-semibold text-stone-700">Author</label>
+              <label className="font-semibold text-stone-700 dark:text-stone-300">Author</label>
               <input
                 type="text"
                 value={guideForm.author}

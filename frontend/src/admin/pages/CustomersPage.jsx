@@ -153,14 +153,14 @@ export const CustomersPage = () => {
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => setSelectedCustomer(row)}
-            className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-deep hover:bg-emerald-50"
+            className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-deep hover:bg-emerald-50 dark:hover:text-emerald-300 dark:hover:bg-emerald-950/40"
             title="View customer profile"
           >
             <Eye className="w-4 h-4" />
           </button>
           <button
             onClick={() => handleOpenDrawer(row)}
-            className="p-1.5 rounded-lg text-stone-500 hover:text-ink hover:bg-stone-100"
+            className="p-1.5 rounded-lg text-stone-500 hover:text-ink hover:bg-stone-100 dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-800"
             title="Edit profile"
           >
             <Edit className="w-4 h-4" />
@@ -178,6 +178,16 @@ export const CustomersPage = () => {
         </div>
       )
     }
+  ];
+
+  const customerExportColumns = [
+    { header: 'Name', value: (c) => c.name },
+    { header: 'Email', value: (c) => c.email },
+    { header: 'Phone', value: (c) => c.phone },
+    { header: 'City', value: (c) => c.city },
+    { header: 'State', value: (c) => c.state },
+    { header: 'Total Orders', value: (c) => c.totalOrders },
+    { header: 'Total Spent', value: (c) => c.totalSpent }
   ];
 
   return (
@@ -205,6 +215,8 @@ export const CustomersPage = () => {
 
       {/* Main Table */}
       <DataTable
+        exportColumns={customerExportColumns}
+        exportFileName="kapee-customers"
         columns={columns}
         data={customers}
         searchPlaceholder="Search customer by name, email, phone, city..."
@@ -234,7 +246,7 @@ export const CustomersPage = () => {
               <button
                 type="button"
                 onClick={() => handleOpenDrawer(selectedCustomer)}
-                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700"
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700 dark:bg-stone-800 dark:hover:bg-stone-700 dark:text-stone-200"
               >
                 Edit Profile
               </button>
@@ -311,7 +323,7 @@ export const CustomersPage = () => {
             <button
               type="button"
               onClick={() => setCustomerDrawerOpen(false)}
-              className="px-4 py-2 text-xs font-semibold text-stone-500 hover:text-stone-800"
+              className="px-4 py-2 text-xs font-semibold text-stone-500 hover:text-stone-800 dark:hover:text-stone-100"
             >
               Cancel
             </button>
@@ -336,7 +348,7 @@ export const CustomersPage = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="font-semibold text-stone-700 dark:text-stone-300">Email Address *</label>
               <input
@@ -357,7 +369,7 @@ export const CustomersPage = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="font-semibold text-stone-700 dark:text-stone-300">City</label>
               <input

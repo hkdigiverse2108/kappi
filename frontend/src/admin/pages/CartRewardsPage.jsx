@@ -230,7 +230,7 @@ export const CartRewardsPage = () => {
           enabled={form.extraDiscount.enabled}
           onToggle={(v) => setSection('extraDiscount', { enabled: v })}
         >
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <AmountField
               label="Cart Amount"
               value={form.extraDiscount.threshold}
@@ -313,7 +313,7 @@ export const CartRewardsPage = () => {
           description="Shipping charged below the free shipping amount, and the gift packaging option price."
           enabled
         >
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <AmountField
               label="Shipping Fee"
               hint={form.freeShipping.enabled ? `Free from ₹${form.freeShipping.threshold || 0}` : 'Charged on every order'}

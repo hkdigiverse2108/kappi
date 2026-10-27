@@ -19,6 +19,7 @@ import { FooterCMS } from './pages/cms/FooterCMS';
 import { BannersPage } from './pages/cms/BannersPage';
 import { MarketingPage } from './pages/MarketingPage';
 import { ReportsPage } from './pages/ReportsPage';
+import { SeoPage } from './pages/SeoPage';
 import { DesignSystemPage } from './pages/DesignSystemPage';
 import { useAdminStore } from './store/adminStore';
 
@@ -94,6 +95,7 @@ export const AdminApp = () => {
         {/* Marketing, Reports, Design System */}
         <Route path="marketing" element={<MarketingPage />} />
         <Route path="reports" element={<ReportsPage />} />
+        <Route path="seo" element={<SeoPage />} />
         <Route path="design-system" element={<DesignSystemPage />} />
       </Route>
 

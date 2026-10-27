@@ -17,8 +17,7 @@ import {
   Zap,
   Droplets,
   Star,
-  Truck,
-  Search
+  Truck
 } from 'lucide-react';
 import { useAdminStore } from '../../store/adminStore';
 import { SideDrawer } from '../../components/common/SideDrawer';
@@ -43,8 +42,7 @@ const PAGE_FIELDS = [
   'heroBadge', 'heroTitle', 'heroSubtext',
   'storyHeading', 'storyParagraph1', 'storyParagraph2', 'storyParagraph3', 'storyImage', 'storyImageAlt',
   'valuesHeading', 'valuesSubtext',
-  'ctaHeading', 'ctaSubtext', 'ctaButtonText', 'ctaButtonLink',
-  'seoTitle', 'seoDescription', 'ogTitle', 'ogDescription'
+  'ctaHeading', 'ctaSubtext', 'ctaButtonText', 'ctaButtonLink'
 ];
 const toPageForm = (story) => Object.fromEntries(PAGE_FIELDS.map((key) => [key, story?.[key] || '']));
 
@@ -511,7 +509,7 @@ export const OurStoryPageCMS = () => {
                   <button
                     type="button"
                     onClick={() => handleToggleValueActive(val.id, val.active !== false)}
-                    className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-deep hover:bg-stone-100 dark:hover:bg-stone-800"
+                    className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-deep hover:bg-stone-100 dark:hover:bg-stone-800 dark:hover:text-emerald-300"
                     title={val.active !== false ? 'Hide from page' : 'Show on page'}
                   >
                     {val.active !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
@@ -519,7 +517,7 @@ export const OurStoryPageCMS = () => {
                   <button
                     type="button"
                     onClick={() => handleOpenValueDrawer(val)}
-                    className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-deep hover:bg-stone-100 dark:hover:bg-stone-800"
+                    className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-deep hover:bg-stone-100 dark:hover:bg-stone-800 dark:hover:text-emerald-300"
                     title="Edit Pillar"
                   >
                     <Edit className="w-4 h-4" />
@@ -608,70 +606,6 @@ export const OurStoryPageCMS = () => {
           </div>
         </div>
       </div>
-
-      {/* Editor Section 5: SEO & Social Sharing */}
-      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/80 dark:border-stone-800 p-5 shadow-2xs space-y-4">
-        <div>
-          <h3 className="text-base font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
-            <Search className="w-4 h-4 text-emerald-deep dark:text-emerald-400" />
-            <span>SEO & Social Sharing</span>
-          </h3>
-          <p className="text-xs text-stone-500 mt-0.5">
-            Title and description shown in the browser tab, on Google and when the page link is shared.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-stone-100 dark:border-stone-800">
-          <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400 mb-1">
-              Page Title (Browser Tab & Google)
-            </label>
-            <input
-              type="text"
-              value={form.seoTitle}
-              onChange={(e) => setForm({ ...form, seoTitle: e.target.value })}
-              placeholder="Our Story & Mission | KAPEE Enterprise"
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400 mb-1">
-              Share Title (WhatsApp / Social)
-            </label>
-            <input
-              type="text"
-              value={form.ogTitle}
-              onChange={(e) => setForm({ ...form, ogTitle: e.target.value })}
-              placeholder="Our Story & Mission | KAPEE Enterprise"
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400 mb-1">
-              Meta Description
-            </label>
-            <textarea
-              rows={2}
-              value={form.seoDescription}
-              onChange={(e) => setForm({ ...form, seoDescription: e.target.value })}
-              placeholder="Learn about KAPEE Enterprise..."
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400 mb-1">
-              Share Description
-            </label>
-            <textarea
-              rows={2}
-              value={form.ogDescription}
-              onChange={(e) => setForm({ ...form, ogDescription: e.target.value })}
-              placeholder="Discover how KAPEE is replacing toxic household cleaners..."
-              className={inputClass}
-            />
-          </div>
-        </div>
-      </div>
       </>
       )}
 
@@ -686,7 +620,7 @@ export const OurStoryPageCMS = () => {
             <button
               type="button"
               onClick={() => setValueDrawerOpen(false)}
-              className="px-4 py-2 rounded-xl border border-stone-300 dark:border-stone-700 text-xs font-semibold hover:bg-stone-100"
+              className="px-4 py-2 rounded-xl border border-stone-300 dark:border-stone-700 text-xs font-semibold hover:bg-stone-100 dark:hover:bg-stone-800"
             >
               Cancel
             </button>

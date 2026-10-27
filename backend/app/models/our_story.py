@@ -56,6 +56,10 @@ DEFAULT_OUR_STORY_CONTENT = {
     "ctaButtonLink": "/shop",
     "seoTitle": "Our Story & Mission | KAPEE Enterprise",
     "seoDescription": "Learn about KAPEE Enterprise: bringing chemical-free, water-activated magic cleaning to 50,000+ Indian households.",
+    "seoKeywords": "KAPEE Enterprise story, about KAPEE, chemical-free cleaning brand India, melamine magic eraser company, eco-friendly home cleaning, water-activated cleaning sponge",
     "ogTitle": "Our Story & Mission | KAPEE Enterprise",
     "ogDescription": "Discover how KAPEE is replacing toxic household cleaners with water-activated German melamine foam.",
+    "twitterTitle": "Our Story & Mission | KAPEE Enterprise",
+    "twitterDescription": "Chemical-free, water-activated magic cleaning trusted by 50,000+ Indian homes. Meet the team behind KAPEE.",
+    "ogImage": "https://kapee-enterprise.com/hero_banner.png",
 }

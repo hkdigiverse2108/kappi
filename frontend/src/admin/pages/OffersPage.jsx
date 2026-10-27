@@ -154,7 +154,7 @@ export const OffersPage = () => {
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => handleOpenCouponDrawer(row)}
-            className="p-1.5 rounded-lg text-stone-400 hover:text-emerald-deep hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+            className="p-1.5 rounded-lg text-stone-400 hover:text-emerald-deep hover:bg-emerald-50 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-300"
             title="Edit coupon"
           >
             <Edit className="w-4 h-4" />
@@ -172,6 +172,17 @@ export const OffersPage = () => {
         </div>
       )
     }
+  ];
+
+  const couponExportColumns = [
+    { header: 'Code', value: (c) => c.code },
+    { header: 'Type', value: (c) => c.type },
+    { header: 'Value', value: (c) => c.value },
+    { header: 'Max Discount', value: (c) => c.maxDiscount },
+    { header: 'Min Cart', value: (c) => c.minCart },
+    { header: 'Product IDs', value: (c) => c.productIds },
+    { header: 'Times Used', value: (c) => c.usedCount || 0 },
+    { header: 'Status', value: (c) => c.status || 'Active' }
   ];
 
   return (
@@ -216,6 +227,8 @@ export const OffersPage = () => {
 
       {/* Main Coupons Table */}
       <DataTable
+        exportColumns={couponExportColumns}
+        exportFileName="kapee-coupons"
         columns={couponColumns}
         data={coupons}
         searchPlaceholder="Search coupon by code, discount..."
@@ -259,7 +272,7 @@ export const OffersPage = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="font-semibold text-stone-700 dark:text-stone-300">Discount Type</label>
               <CustomSelect
@@ -280,7 +293,7 @@ export const OffersPage = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="font-semibold text-stone-700 dark:text-stone-300">Min Cart Value (₹)</label>
               <input

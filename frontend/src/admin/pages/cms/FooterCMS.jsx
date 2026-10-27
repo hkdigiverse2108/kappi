@@ -170,7 +170,7 @@ export const FooterCMS = () => {
                 <button
                   type="button"
                   onClick={() => handleOpenLinkDrawer(column, link)}
-                  className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-deep hover:bg-stone-100 dark:hover:bg-stone-800"
+                  className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-deep hover:bg-stone-100 dark:hover:bg-stone-800 dark:hover:text-emerald-300"
                   title="Edit Link"
                 >
                   <Edit className="w-4 h-4" />
@@ -398,7 +398,7 @@ export const FooterCMS = () => {
             <button
               type="button"
               onClick={() => setLinkDrawerOpen(false)}
-              className="px-4 py-2 rounded-xl border border-stone-300 dark:border-stone-700 text-xs font-semibold hover:bg-stone-100"
+              className="px-4 py-2 rounded-xl border border-stone-300 dark:border-stone-700 text-xs font-semibold hover:bg-stone-100 dark:hover:bg-stone-800"
             >
               Cancel
             </button>

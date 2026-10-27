@@ -29,31 +29,11 @@ const cardItemVariants = {
 };
 
 export const Shop = () => {
-  // Products come from Admin > Products (backend)
+  // Products come from Admin > Products (backend); SEO tags from Admin > SEO > Shop
   const products = useProductStore((s) => s.products);
   return (
     <div className="space-y-6 pb-16">
       <Helmet>
-        <title>Shop All Cleaning Products | KAPEE Enterprise India</title>
-        <meta
-          name="description"
-          content="Buy premium chemical-free magic melamine erasers, kitchen scrub pads, and home cleaning essentials online. Fast pan-India delivery & COD available."
-        />
-        <link rel="canonical" href="https://kapee-enterprise.com/shop" />
-
-        {/* OpenGraph */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://kapee-enterprise.com/shop" />
-        <meta property="og:title" content="Shop All Cleaning Products | KAPEE Enterprise" />
-        <meta property="og:description" content="Discover our complete range of German melamine sponges and eco cleaning heroes. Free shipping on orders over ₹499." />
-        <meta property="og:image" content="https://kapee-enterprise.com/hero_banner.png" />
-
-        {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Shop All Cleaning Products | KAPEE Enterprise" />
-        <meta name="twitter:description" content="Buy chemical-free magic melamine erasers and eco-friendly cleaning essentials online." />
-        <meta name="twitter:image" content="https://kapee-enterprise.com/hero_banner.png" />
-
         {/* CollectionPage Schema */}
         <script type="application/ld+json">
           {JSON.stringify({

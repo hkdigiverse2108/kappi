@@ -11,7 +11,7 @@ export const HouseTrustBadge = ({ icon: Icon, idx }) => {
   const goldId = `gold-grad-${idx}`;
 
   return (
-    <div className="relative w-16 h-18 sm:w-18 sm:h-20 flex items-center justify-center mb-3 sm:mb-4 transition-transform duration-500 group-hover:-translate-y-2 select-none">
+    <div className="relative w-16 h-[72px] sm:w-[72px] sm:h-20 flex items-center justify-center mb-3 sm:mb-4 transition-transform duration-500 group-hover:-translate-y-2 select-none">
       <svg
         viewBox="0 0 84 94"
         className="absolute inset-0 w-full h-full pointer-events-none overflow-visible filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all duration-500 group-hover:drop-shadow-[0_8px_20px_rgba(200,150,46,0.4)]"

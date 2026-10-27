@@ -747,7 +747,7 @@ export const ProductsPage = () => {
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => handleOpenProductDrawer(row)}
-            className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-deep hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+            className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-deep hover:bg-emerald-50 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-300"
             title="Edit product"
           >
             <Edit className="w-4 h-4" />
@@ -759,7 +759,7 @@ export const ProductsPage = () => {
               addProduct(dup);
               addToast({ type: 'success', title: 'Product Duplicated', message: `Copied ${row.title}.` });
             }}
-            className="p-1.5 rounded-lg text-stone-400 hover:text-ink hover:bg-stone-100 dark:hover:bg-stone-800"
+            className="p-1.5 rounded-lg text-stone-400 hover:text-ink dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800"
             title="Duplicate product"
           >
             <Copy className="w-4 h-4" />
@@ -777,6 +777,20 @@ export const ProductsPage = () => {
         </div>
       )
     }
+  ];
+
+  const productExportColumns = [
+    { header: 'Title', value: (p) => p.title },
+    { header: 'Category', value: (p) => p.category },
+    { header: 'Badge', value: (p) => p.badge },
+    { header: 'Price', value: (p) => p.basePrice },
+    { header: 'MRP', value: (p) => p.baseMrp },
+    {
+      header: 'Discount %',
+      value: (p) => (p.baseMrp ? Math.round(((p.baseMrp - p.basePrice) / p.baseMrp) * 100) : '')
+    },
+    { header: 'Rating', value: (p) => (p.reviewCount ? p.rating : '') },
+    { header: 'Review Count', value: (p) => p.reviewCount || 0 }
   ];
 
   return (
@@ -840,6 +854,8 @@ export const ProductsPage = () => {
       {/* Main Products Content */}
       {viewMode === 'table' ? (
         <DataTable
+          exportColumns={productExportColumns}
+          exportFileName="kapee-products"
           columns={productColumns}
           data={products}
           searchPlaceholder="Search product by title, badge..."
@@ -908,7 +924,7 @@ export const ProductsPage = () => {
                       e.stopPropagation();
                       handleOpenProductDrawer(p);
                     }}
-                    className="p-1 rounded text-stone-400 hover:text-emerald-deep"
+                    className="p-1 rounded text-stone-400 hover:text-emerald-deep dark:hover:text-emerald-300"
                   >
                     <Edit className="w-4 h-4" />
                   </button>
@@ -940,7 +956,7 @@ export const ProductsPage = () => {
             <button
               type="button"
               onClick={() => setProductDrawerOpen(false)}
-              className="px-4 py-2 text-xs font-semibold text-stone-500 hover:text-stone-800"
+              className="px-4 py-2 text-xs font-semibold text-stone-500 hover:text-stone-800 dark:hover:text-stone-100"
             >
               Cancel
             </button>
@@ -1007,7 +1023,7 @@ export const ProductsPage = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="font-semibold text-stone-700 dark:text-stone-300">"People viewing now" count</label>
                 <input
@@ -1070,7 +1086,7 @@ export const ProductsPage = () => {
                   className={`group relative rounded-2xl overflow-hidden border bg-white dark:bg-stone-900 transition-all ${
                     idx === 0
                       ? 'border-emerald-500 ring-2 ring-emerald-500/30 shadow-xs'
-                      : 'border-stone-200 dark:border-stone-700 hover:border-stone-400'
+                      : 'border-stone-200 dark:border-stone-700 hover:border-stone-400 dark:hover:border-stone-600'
                   }`}
                 >
                   {/* Aspect Square Image Box */}
@@ -1170,7 +1186,7 @@ export const ProductsPage = () => {
             <h4 className="font-serif font-bold text-sm text-ink dark:text-stone-100 border-b pb-1">
               Base Pricing
             </h4>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="font-semibold text-stone-700 dark:text-stone-300">Base Price (₹) *</label>
                 <input
@@ -1430,7 +1446,7 @@ export const ProductsPage = () => {
                           </label>
                         </div>
                         {singleBa.before && (
-                          <div className="relative aspect-video rounded-lg overflow-hidden bg-stone-100 border border-stone-200 dark:border-stone-700">
+                          <div className="relative aspect-video rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
                             <img src={singleBa.before} alt="Before preview" className="w-full h-full object-cover" />
                           </div>
                         )}
@@ -1452,7 +1468,7 @@ export const ProductsPage = () => {
                           </label>
                         </div>
                         {singleBa.after && (
-                          <div className="relative aspect-video rounded-lg overflow-hidden bg-stone-100 border border-stone-200 dark:border-stone-700">
+                          <div className="relative aspect-video rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
                             <img src={singleBa.after} alt="After preview" className="w-full h-full object-cover" />
                           </div>
                         )}
@@ -1654,7 +1670,7 @@ export const ProductsPage = () => {
                 <button
                   type="button"
                   onClick={handleAddSafeSurface}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white dark:bg-stone-900 text-emerald-deep dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs hover:bg-emerald-50"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white dark:bg-stone-900 text-emerald-deep dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
                 >
                   <Plus className="w-3 h-3" />
                   <span>Add Surface</span>
@@ -1856,7 +1872,7 @@ export const ProductsPage = () => {
                             type="button"
                             disabled={idx === 0}
                             onClick={() => move(-1)}
-                            className="p-1 rounded text-stone-400 hover:text-ink disabled:opacity-30"
+                            className="p-1 rounded text-stone-400 hover:text-ink dark:hover:text-stone-100 disabled:opacity-30"
                             title="Move up"
                           >
                             <ChevronUp className="w-4 h-4" />
@@ -1865,7 +1881,7 @@ export const ProductsPage = () => {
                             type="button"
                             disabled={idx === selectedIds.length - 1}
                             onClick={() => move(1)}
-                            className="p-1 rounded text-stone-400 hover:text-ink disabled:opacity-30"
+                            className="p-1 rounded text-stone-400 hover:text-ink dark:hover:text-stone-100 disabled:opacity-30"
                             title="Move down"
                           >
                             <ChevronDown className="w-4 h-4" />

@@ -23,7 +23,11 @@ class FaqContent(BaseModel):
     helpText: str = ""
     seoTitle: str = ""
     seoDescription: str = ""
+    seoKeywords: str = ""
     ogTitle: str = ""
     ogDescription: str = ""
+    twitterTitle: str = ""
+    twitterDescription: str = ""
+    ogImage: str = ""
     categories: list[str] = []
     faqs: list[FaqItem] = []

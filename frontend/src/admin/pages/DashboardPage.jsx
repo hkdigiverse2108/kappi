@@ -361,7 +361,7 @@ export const DashboardPage = () => {
                   className="fixed inset-0 z-40"
                   onClick={() => setCustomDateOpen(false)}
                 />
-                <div className="absolute right-0 top-12 z-50 w-80 sm:w-96 p-5 rounded-2xl bg-surface border border-border shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                <div className="absolute right-0 top-12 z-50 w-[calc(100vw-2rem)] max-w-xs sm:max-w-none sm:w-96 p-5 rounded-2xl bg-surface border border-border shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
                   <div className="flex items-center justify-between pb-2 border-b border-border">
                     <div className="flex items-center gap-2">
                       <div className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-primary">

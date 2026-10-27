@@ -27,6 +27,7 @@ import { triggerKapeeCelebration } from '../components/common/Confetti';
 import { WhatsAppIcon } from '../../components/common/WhatsAppIcon';
 import { CustomSelect } from '../components/common/CustomSelect';
 import { confirmDelete } from '../../store/useConfirmStore';
+import { downloadCSV } from '../lib/csv';
 
 const ENQUIRY_STATUS_OPTIONS = [
   { value: 'New', label: '● New' },
@@ -186,7 +187,7 @@ export const MarketingPage = () => {
             className={`pb-3 px-4 text-xs sm:text-sm font-semibold whitespace-nowrap relative transition-colors flex items-center gap-2 ${
               activeTab === tab.key
                 ? 'text-emerald-deep dark:text-emerald-300'
-                : 'text-stone-500 hover:text-stone-800'
+                : 'text-stone-500 hover:text-stone-800 dark:hover:text-stone-100'
             }`}
           >
             <span>{tab.label}</span>
@@ -250,7 +251,7 @@ export const MarketingPage = () => {
                   <button
                     type="button"
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-2.5 top-2.5 text-stone-400 hover:text-stone-600"
+                    className="absolute right-2.5 top-2.5 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -506,8 +507,20 @@ export const MarketingPage = () => {
               </p>
             </div>
             <button
-              onClick={() => addToast({ type: 'info', title: 'Export Ready', message: 'Downloading subscribers CSV.' })}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-stone-300 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 font-semibold"
+              onClick={() =>
+                downloadCSV(
+                  'kapee-newsletter-subscribers',
+                  [
+                    { header: 'Email', value: (s) => s.email },
+                    { header: 'Opt-in Source', value: (s) => s.source },
+                    { header: 'Joined Date', value: (s) => s.date },
+                    { header: 'Status', value: (s) => s.status }
+                  ],
+                  subscribers
+                )
+              }
+              disabled={!subscribers.length}
+              className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-xl border border-stone-300 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 font-semibold"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export CSV</span>
@@ -695,7 +708,7 @@ export const MarketingPage = () => {
               <button
                 type="button"
                 onClick={() => setReplyEnquiry(null)}
-                className="p-1 rounded-lg text-stone-400 hover:text-stone-600"
+                className="p-1 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
               >
                 <X className="w-4 h-4" />
               </button>

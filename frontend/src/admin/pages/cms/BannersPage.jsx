@@ -100,7 +100,7 @@ export const BannersPage = () => {
         type="button"
         onClick={cancelEditing}
         title="Cancel (Esc)"
-        className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 shrink-0"
+        className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 shrink-0 dark:hover:text-stone-200"
       >
         <X className="w-4 h-4" />
       </button>

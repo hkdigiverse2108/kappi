@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Mail, Phone, MapPin, Send, CheckCircle2 } from 'lucide-react';
-import { Helmet } from 'react-helmet-async';
 import { WhatsAppIcon } from '../components/common/WhatsAppIcon';
 import { Select } from '../components/common/Select';
 import { useAdminStore } from '../admin/store/adminStore';
@@ -57,17 +56,6 @@ export const Contact = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
-      <Helmet>
-        <title>{contactSection.seoTitle}</title>
-        <meta name="description" content={contactSection.seoDescription} />
-        <link rel="canonical" href="https://kapee-enterprise.com/contact" />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://kapee-enterprise.com/contact" />
-        <meta property="og:title" content={contactSection.ogTitle} />
-        <meta property="og:description" content={contactSection.ogDescription} />
-        <meta property="og:image" content="https://kapee-enterprise.com/hero_banner.png" />
-      </Helmet>
-
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
         <span className="text-xs font-bold uppercase tracking-widest text-emerald">

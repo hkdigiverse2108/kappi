@@ -62,16 +62,8 @@ export const Navbar = () => {
     >
       <div className="relative z-20 max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-4">
-          {/* Mobile Hamburger & Brand Logo */}
+          {/* Brand Logo */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 text-ink hover:text-emerald rounded-lg hover:bg-emerald-soft/50 transition-colors"
-              aria-label="Open mobile navigation menu"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
-
             {/* Logo (Enlarged) */}
             <Logo className={isScrolled ? 'h-10 sm:h-11 w-auto' : 'h-12 sm:h-14 w-auto'} />
           </div>
@@ -248,6 +240,15 @@ export const Navbar = () => {
                   {cartCount}
                 </span>
               )}
+            </button>
+
+            {/* Mobile Hamburger */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden p-2 text-ink hover:text-emerald rounded-lg hover:bg-emerald-soft/50 transition-colors"
+              aria-label="Open mobile navigation menu"
+            >
+              <Menu className="w-6 h-6" />
             </button>
           </div>
         </div>

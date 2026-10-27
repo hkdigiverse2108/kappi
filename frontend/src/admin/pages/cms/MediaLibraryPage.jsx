@@ -76,7 +76,7 @@ export const MediaLibraryPage = () => {
               key={f}
               onClick={() => setActiveFolder(f)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                activeFolder === f ? 'bg-emerald-deep text-white shadow-xs' : 'text-stone-600 hover:bg-stone-100'
+                activeFolder === f ? 'bg-emerald-deep text-white shadow-xs' : 'text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
               }`}
             >
               <Folder className="w-3.5 h-3.5" />
@@ -92,7 +92,7 @@ export const MediaLibraryPage = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search filenames..."
-            className="w-full pl-9 pr-3 py-1.5 bg-stone-50 border rounded-xl text-xs"
+            className="w-full pl-9 pr-3 py-1.5 bg-stone-50 dark:bg-stone-900 dark:text-stone-100 border rounded-xl text-xs"
           />
         </div>
       </div>

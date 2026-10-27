@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from app.models.home import HOME_SECTIONS
+from app.models.home import HOME_SECTIONS, DEFAULT_SHOP_SEO
 from app.models.product import BESTSELLER_BADGE
 from app.repository import home as home_repo
 from app.repository import product as product_repo
@@ -13,6 +13,12 @@ _home_cache: dict | None = None
 def clear_cache():
     global _home_cache
     _home_cache = None
+
+
+async def ensure_shop_seo_content(db):
+    """Fills the Shop page SEO on first start; never overwrites admin edits."""
+    await home_repo.insert_home_section_if_missing(db, "shopSeo", DEFAULT_SHOP_SEO)
+    clear_cache()
 
 
 async def get_home_page(db) -> dict:

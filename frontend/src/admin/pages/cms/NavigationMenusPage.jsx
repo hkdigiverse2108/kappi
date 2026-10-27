@@ -9,7 +9,6 @@ export const NavigationMenusPage = () => {
   const [headerLinks, setHeaderLinks] = useState([
     { id: '1', title: 'Home', path: '/' },
     { id: '2', title: 'Shop All', path: '/shop' },
-    { id: '3', title: 'Combos & Packs', path: '/combos' },
     { id: '4', title: 'Contact Support', path: '/contact' },
     { id: '5', title: 'Guides', path: '/guides' },
     { id: '6', title: 'About Us', path: '/about' },

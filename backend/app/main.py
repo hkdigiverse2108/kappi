@@ -1,10 +1,11 @@
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.config import settings
+from app.config import settings, ROOT_DIR
 from app.database.db import connect_to_mongo, close_mongo_connection, db
 from app.models.product import setup_product_indexes
 from app.models.review import setup_review_indexes
@@ -20,7 +21,10 @@ from app.services.contact import ensure_contact_content
 from app.services.our_story import ensure_our_story_content
 from app.services.footer import ensure_footer_content
 from app.services.announcement import ensure_announcement_content
+from app.services.home import ensure_shop_seo_content
 from app.utils.file_storage import UPLOADS_DIR
+from app.services import page_seo as page_seo_service
+from app.services.seo_html import inject_seo
 from app.controllers.home import router as home_router
 from app.controllers.upload import router as upload_router
 from app.controllers.product import router as product_router
@@ -39,6 +43,7 @@ from app.controllers.faq import router as faq_router
 from app.controllers.policy import router as policy_router
 from app.controllers.order import router as order_router
 from app.controllers.cart_offers import router as cart_offers_router
+from app.controllers.seo import router as seo_router
 
 logging.basicConfig(level=logging.INFO)
 
@@ -61,6 +66,7 @@ async def lifespan(app: FastAPI):
     await ensure_our_story_content(db.db)
     await ensure_footer_content(db.db)
     await ensure_announcement_content(db.db)
+    await ensure_shop_seo_content(db.db)
     # Products and reviews have no seed data: they live only in MongoDB and are managed from the admin panel
     yield
     # Shutdown events
@@ -104,6 +110,30 @@ app.include_router(faq_router)
 app.include_router(policy_router)
 app.include_router(order_router)
 app.include_router(cart_offers_router)
+app.include_router(seo_router)
 
 # Images uploaded from the admin panel
 app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
+
+# Production: after "npm run build" the backend also serves the website from frontend/dist,
+# putting each page's admin SEO into index.html on every page request
+FRONTEND_DIST = ROOT_DIR / "frontend" / "dist"
+
+if (FRONTEND_DIST / "index.html").exists():
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_frontend(full_path: str):
+        if full_path.startswith(("api/", "uploads/")):
+            raise HTTPException(status_code=404, detail="Not Found")
+
+        file = (FRONTEND_DIST / full_path).resolve()
+        if full_path and file.is_file() and file.is_relative_to(FRONTEND_DIST.resolve()):
+            return FileResponse(file)
+
+        page = (FRONTEND_DIST / "index.html").read_text(encoding="utf-8")
+        try:
+            seo = (await page_seo_service.get_page_seo(db.db, full_path))["seo"]
+        except Exception:
+            logging.exception("Could not load SEO for index.html")
+            seo = None
+        return HTMLResponse(inject_seo(page, seo), headers={"Cache-Control": "no-cache"})

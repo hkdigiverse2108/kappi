@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Leaf, ShieldCheck, Heart, Sparkles, Check, ArrowRight, Zap, Droplets, Star, Truck } from 'lucide-react';
-import { Helmet } from 'react-helmet-async';
 import { FadeIn, ScaleIn, StaggerContainer, StaggerItem } from '../components/common/MotionWrapper';
 import { Logo } from '../components/common/Logo';
 import { useAdminStore } from '../admin/store/adminStore';
@@ -50,17 +49,6 @@ export const About = () => {
 
   return (
     <div className="space-y-16 pb-20">
-      <Helmet>
-        <title>{ourStory.seoTitle}</title>
-        <meta name="description" content={ourStory.seoDescription} />
-        <link rel="canonical" href="https://kapee-enterprise.com/about" />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://kapee-enterprise.com/about" />
-        <meta property="og:title" content={ourStory.ogTitle} />
-        <meta property="og:description" content={ourStory.ogDescription} />
-        <meta property="og:image" content="https://kapee-enterprise.com/hero_banner.png" />
-      </Helmet>
-
       {/* Hero */}
       <section className="bg-hero-gradient py-16 px-4 sm:px-6 lg:px-8 border-b border-emerald-soft text-center">
         <div className="max-w-3xl mx-auto space-y-4">

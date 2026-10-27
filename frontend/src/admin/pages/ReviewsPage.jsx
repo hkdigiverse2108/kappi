@@ -31,6 +31,7 @@ import { SettingsCard, TextField } from '../components/common/SettingsCard';
 import { StarRating, StarRatingInput } from '../../components/common/StarRating';
 import { useSectionForm } from '../lib/useSectionForm';
 import { confirmDelete } from '../../store/useConfirmStore';
+import { csvDate } from '../lib/csv';
 
 const EMPTY_REVIEW_FORM = {
   productId: '',
@@ -315,7 +316,7 @@ export const ReviewsPage = () => {
                   triggerKapeeCelebration();
                   addToast({ type: 'success', title: 'Review Approved', message: `Published ${row.name}'s review.` });
                 }}
-                className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-950/40"
                 title="Approve review"
               >
                 <Check className="w-4 h-4" />
@@ -337,7 +338,7 @@ export const ReviewsPage = () => {
                 setReplyingReview(row);
                 setReplyText(row.reply || '');
               }}
-              className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-deep hover:bg-emerald-50"
+              className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-deep hover:bg-emerald-50 dark:hover:text-emerald-300 dark:hover:bg-emerald-950/40"
               title="Reply to review"
             >
               <MessageSquare className="w-4 h-4" />
@@ -346,7 +347,7 @@ export const ReviewsPage = () => {
 
           <button
             onClick={() => openReviewDrawer(row)}
-            className="p-1.5 rounded-lg text-stone-500 hover:text-ink hover:bg-stone-100"
+            className="p-1.5 rounded-lg text-stone-500 hover:text-ink hover:bg-stone-100 dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-800"
             title="Edit review"
           >
             <Edit className="w-4 h-4" />
@@ -371,6 +372,19 @@ export const ReviewsPage = () => {
         </div>
       )
     }
+  ];
+
+  const reviewExportColumns = [
+    { header: 'Customer', value: (r) => r.name },
+    { header: 'City', value: (r) => r.city },
+    { header: 'Date', value: (r) => csvDate(r.createdAt) },
+    { header: 'Verified', value: (r) => (r.verified ? 'Yes' : 'No') },
+    { header: 'Product', value: (r) => r.productTitle },
+    { header: 'Rating', value: (r) => r.rating },
+    { header: 'Title', value: (r) => r.title },
+    { header: 'Comment', value: (r) => r.comment },
+    { header: 'Brand Reply', value: (r) => r.reply },
+    { header: 'Status', value: (r) => r.status }
   ];
 
   return (
@@ -454,6 +468,8 @@ export const ReviewsPage = () => {
 
       {/* Reviews Table */}
       <DataTable
+          exportColumns={reviewExportColumns}
+          exportFileName="kapee-reviews"
           key={reviewTab}
           columns={isHomepageTab ? reviewColumns.filter((c) => c.header !== 'Status') : reviewColumns}
           data={tabReviews}
@@ -614,7 +630,7 @@ export const ReviewsPage = () => {
           </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3 items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
             <div className="space-y-1">
               <label className="font-semibold text-stone-700 dark:text-stone-300">Review Date</label>
               <input

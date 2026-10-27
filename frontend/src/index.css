@@ -77,6 +77,19 @@
     background-color: #1C1917;
     color: #F5F5F4;
   }
+
+  /* Dark mode defaults (zero specificity so explicit utilities still win) */
+  :where([data-theme="dark"]) select {
+    background-color: var(--surface);
+    color: var(--text);
+    border-color: var(--border);
+  }
+
+  :where([data-theme="dark"]) *,
+  :where([data-theme="dark"]) ::before,
+  :where([data-theme="dark"]) ::after {
+    border-color: var(--border);
+  }
 }
 
 /* Custom Scrollbar */
@@ -213,6 +226,10 @@
 .btn-secondary:active {
   transform: translateY(0);
 }
+.dark .btn-secondary,
+[data-theme="dark"] .btn-secondary {
+  color: var(--primary);
+}
 
 /* Ghost Button: text only with emerald soft hover */
 .btn-ghost {
@@ -320,6 +337,11 @@ select:disabled {
 .table-kui tbody tr.selected {
   background-color: #EAF4F2;
   border-left: 3px solid #0A5C55;
+}
+.dark .table-kui tbody tr.selected,
+[data-theme="dark"] .table-kui tbody tr.selected {
+  background-color: var(--surface-tint);
+  border-left-color: var(--primary);
 }
 
 /* Animations */

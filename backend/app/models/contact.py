@@ -60,8 +60,12 @@ DEFAULT_CONTACT_CONTENT = {
     "successButtonText": "Send Another Message",
     "seoTitle": "Contact Us | Customer Support | KAPEE Enterprise",
     "seoDescription": "Get in touch with KAPEE Enterprise. WhatsApp support, customer care email, and order assistance across India.",
+    "seoKeywords": "contact KAPEE Enterprise, KAPEE customer care, KAPEE WhatsApp support, magic eraser order help, cleaning products support India, KAPEE email",
     "ogTitle": "Contact Customer Support | KAPEE Enterprise",
     "ogDescription": "Reach our support team via WhatsApp, call or email for any order or product assistance.",
+    "twitterTitle": "Contact Customer Support | KAPEE Enterprise",
+    "twitterDescription": "Questions about your order or our magic erasers? Message KAPEE on WhatsApp, call or email us.",
+    "ogImage": "https://kapee-enterprise.com/hero_banner.png",
 }
 
 

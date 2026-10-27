@@ -43,17 +43,6 @@ export const FAQ = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
       <Helmet>
-        <title>{faqPage.seoTitle}</title>
-        <meta name="description" content={faqPage.seoDescription} />
-        <link rel="canonical" href="https://kapee-enterprise.com/faq" />
-
-        {/* OpenGraph */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://kapee-enterprise.com/faq" />
-        <meta property="og:title" content={faqPage.ogTitle} />
-        <meta property="og:description" content={faqPage.ogDescription} />
-        <meta property="og:image" content="https://kapee-enterprise.com/hero_banner.png" />
-
         {/* FAQPage Schema for Google Rich Results */}
         <script type="application/ld+json">
           {JSON.stringify({
