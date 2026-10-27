@@ -13,6 +13,7 @@ import * as ourStoryApi from '../../api/ourStoryApi';
 import * as faqApi from '../../api/faqApi';
 import * as policyApi from '../../api/policyApi';
 import * as footerApi from '../../api/footerApi';
+import * as announcementApi from '../../api/announcementApi';
 import * as orderApi from '../../api/orderApi';
 import { productBadgeList } from '../lib/productBadges';
 
@@ -225,6 +226,9 @@ let policySaveQueue = Promise.resolve();
 
 // Footer saves run one after another (see saveFooter)
 let footerSaveQueue = Promise.resolve();
+
+// Announcement ticker saves run one after another (see saveAnnouncementMessages)
+let announcementSaveQueue = Promise.resolve();
 
 const enquiryFromApi = (e) => ({
   ...e,
@@ -1096,6 +1100,29 @@ export const useAdminStore = create(
         return get().saveFooter();
       },
 
+      // Top announcement ticker - messages come from the backend (GET /api/announcement-bar) and
+      // are saved back all together (PUT /api/announcement-bar)
+      announcementBar: null,
+      loadAnnouncementBar: async () => {
+        try {
+          set({ announcementBar: await announcementApi.fetchAnnouncementBar() });
+        } catch (err) {
+          console.error('Failed to load announcement bar:', err);
+        }
+      },
+      // Returns the save request; on failure the messages are reloaded from the backend
+      saveAnnouncementMessages: (messages, activity) => {
+        set((state) => ({ announcementBar: { ...(state.announcementBar || {}), messages } }));
+        get().logActivity('CMS', activity);
+        const request = announcementSaveQueue.then(() => announcementApi.saveAnnouncementBar(get().announcementBar));
+        announcementSaveQueue = request.catch(() => {});
+        return request.catch((err) => {
+          get().addToast({ type: 'error', title: 'Save Failed', message: `Could not save announcement bar: ${err.message}` });
+          get().loadAnnouncementBar();
+          throw err;
+        });
+      },
+
       heroSlides: initialHeroSlides,
       updateHeroSlide: (id, updates) => {
         set((state) => ({
@@ -1242,6 +1269,8 @@ export const useAdminStore = create(
         ourStory: state.ourStory,
         // policies are not cached: they always come fresh from the backend (loadPolicies)
         // footer is not cached: it always comes fresh from the backend (loadFooter)
+        // Announcement ticker cache (refreshed from the backend on every visit)
+        announcementBar: state.announcementBar,
         activityLogs: state.activityLogs
       })
     }

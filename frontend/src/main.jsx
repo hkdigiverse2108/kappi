@@ -17,6 +17,8 @@ useAdminStore.getState().loadContactContent()
 useAdminStore.getState().loadPolicies()
 // Footer texts and links from Admin > CMS: Footer
 useAdminStore.getState().loadFooter()
+// Top announcement ticker messages from Admin > CMS: Banners & Bar
+useAdminStore.getState().loadAnnouncementBar()
 // Coupons from Admin > Offers, used by the cart's "apply coupon"
 useCartStore.getState().loadCoupons()
 // Cart rewards (free shipping, free gift, extra discount) and fees from Admin > Offers > Cart Rewards

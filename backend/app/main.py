@@ -19,6 +19,7 @@ from app.services.admin_auth import ensure_first_admin
 from app.services.contact import ensure_contact_content
 from app.services.our_story import ensure_our_story_content
 from app.services.footer import ensure_footer_content
+from app.services.announcement import ensure_announcement_content
 from app.utils.file_storage import UPLOADS_DIR
 from app.controllers.home import router as home_router
 from app.controllers.upload import router as upload_router
@@ -33,6 +34,7 @@ from app.controllers.contact import router as contact_router
 from app.controllers.newsletter import router as newsletter_router
 from app.controllers.our_story import router as our_story_router
 from app.controllers.footer import router as footer_router
+from app.controllers.announcement import router as announcement_router
 from app.controllers.faq import router as faq_router
 from app.controllers.policy import router as policy_router
 from app.controllers.order import router as order_router
@@ -58,6 +60,7 @@ async def lifespan(app: FastAPI):
     await ensure_contact_content(db.db)
     await ensure_our_story_content(db.db)
     await ensure_footer_content(db.db)
+    await ensure_announcement_content(db.db)
     # Products and reviews have no seed data: they live only in MongoDB and are managed from the admin panel
     yield
     # Shutdown events
@@ -96,6 +99,7 @@ app.include_router(contact_router)
 app.include_router(newsletter_router)
 app.include_router(our_story_router)
 app.include_router(footer_router)
+app.include_router(announcement_router)
 app.include_router(faq_router)
 app.include_router(policy_router)
 app.include_router(order_router)

@@ -1,11 +1,4 @@
-// Announcement bar texts and the cart reward progress (rewards are set in Admin > Offers > Cart Rewards)
-
-export const announcementOffers = [
-  { text: '🚚 FREE Shipping across India on orders above ₹499', highlight: 'FREE Shipping' },
-  { text: '✨ Multi-Item Value Combos | Save up to 50% on Bundles', highlight: 'Save up to 50%' },
-  { text: '🏷️ Use coupon KAPEE10 for 10% instant checkout discount', highlight: 'KAPEE10' },
-  { text: '💵 Cash On Delivery (COD) Available across all pin codes', highlight: 'COD Available' }
-];
+// Cart reward progress (rewards are set in Admin > Offers > Cart Rewards)
 
 // Rewards switched on in Admin, lowest amount first: { key, threshold, shortLabel, unlockMessage, unlocked }
 export const activeRewards = (offers, subtotal = 0) => {
