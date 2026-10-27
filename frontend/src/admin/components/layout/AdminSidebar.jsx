@@ -30,7 +30,8 @@ import {
   Flag,
   Palette,
   Gift,
-  MessageSquareText
+  MessageSquareText,
+  PanelBottom
 } from 'lucide-react';
 import { useAdminStore } from '../../store/adminStore';
 
@@ -62,6 +63,7 @@ export const AdminSidebar = () => {
     { label: 'Our Story Page', path: '/admin/cms/story', icon: BookOpen },
     { label: 'Contact Us Page', path: '/admin/cms/contact', icon: PhoneCall },
     { label: 'Policy Pages', path: '/admin/cms/policies', icon: ShieldCheck },
+    { label: 'Footer', path: '/admin/cms/footer', icon: PanelBottom },
     { label: 'Banners & Bar', path: '/admin/cms/banners', icon: Flag },
   ];
 

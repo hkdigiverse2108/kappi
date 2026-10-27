@@ -56,6 +56,7 @@ export const CommandPalette = () => {
     { label: 'CMS Our Story Page', path: '/admin/cms/story', icon: FileText, category: 'CMS' },
     { label: 'CMS Contact Us Page', path: '/admin/cms/contact', icon: FileText, category: 'CMS' },
     { label: 'CMS Policy Pages', path: '/admin/cms/policies', icon: FileText, category: 'CMS' },
+    { label: 'CMS Footer', path: '/admin/cms/footer', icon: FileText, category: 'CMS' },
     { label: 'CMS Banners & Bar', path: '/admin/cms/banners', icon: FileText, category: 'CMS' },
     { label: 'Inquiries', path: '/admin/marketing', icon: Megaphone, category: 'Pages' },
     { label: 'Analytics Reports', path: '/admin/reports', icon: BarChart3, category: 'Pages' },

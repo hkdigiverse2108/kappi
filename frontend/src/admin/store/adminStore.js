@@ -12,6 +12,7 @@ import * as newsletterApi from '../../api/newsletterApi';
 import * as ourStoryApi from '../../api/ourStoryApi';
 import * as faqApi from '../../api/faqApi';
 import * as policyApi from '../../api/policyApi';
+import * as footerApi from '../../api/footerApi';
 import * as orderApi from '../../api/orderApi';
 import { productBadgeList } from '../lib/productBadges';
 
@@ -221,6 +222,9 @@ let faqSaveQueue = Promise.resolve();
 
 // Policy saves run one after another (see savePolicies)
 let policySaveQueue = Promise.resolve();
+
+// Footer saves run one after another (see saveFooter)
+let footerSaveQueue = Promise.resolve();
 
 const enquiryFromApi = (e) => ({
   ...e,
@@ -1040,6 +1044,58 @@ export const useAdminStore = create(
         });
       },
 
+      // Footer CMS - all footer content comes from the backend (GET /api/footer) and every
+      // change below saves the whole footer back (PUT /api/footer)
+      footer: null,
+      loadFooter: async () => {
+        try {
+          set({ footer: await footerApi.fetchFooter() });
+        } catch (err) {
+          console.error('Failed to load footer:', err);
+        }
+      },
+      // Returns the save request; on failure the footer is reloaded from the backend
+      saveFooter: () => {
+        const request = footerSaveQueue.then(() => footerApi.saveFooter(get().footer));
+        footerSaveQueue = request.catch(() => {});
+        return request.catch((err) => {
+          get().addToast({ type: 'error', title: 'Save Failed', message: `Could not save footer: ${err.message}` });
+          get().loadFooter();
+          throw err;
+        });
+      },
+      updateFooter: (updates) => {
+        set((state) => ({ footer: { ...(state.footer || {}), ...updates } }));
+        get().logActivity('CMS', 'Updated Footer Content');
+        return get().saveFooter();
+      },
+      // column is 'shopLinks' or 'companyLinks'
+      addFooterLink: (column, link) => {
+        const newLink = { id: `link-${Date.now()}`, ...link };
+        set((state) => ({
+          footer: { ...(state.footer || {}), [column]: [...(state.footer?.[column] || []), newLink] }
+        }));
+        get().logActivity('CMS', `Added Footer Link "${newLink.label}"`);
+        return get().saveFooter();
+      },
+      updateFooterLink: (column, id, updates) => {
+        set((state) => ({
+          footer: {
+            ...(state.footer || {}),
+            [column]: (state.footer?.[column] || []).map((l) => (l.id === id ? { ...l, ...updates } : l))
+          }
+        }));
+        get().logActivity('CMS', `Updated Footer Link ${id}`);
+        return get().saveFooter();
+      },
+      deleteFooterLink: (column, id) => {
+        set((state) => ({
+          footer: { ...(state.footer || {}), [column]: (state.footer?.[column] || []).filter((l) => l.id !== id) }
+        }));
+        get().logActivity('CMS', `Deleted Footer Link ${id}`);
+        return get().saveFooter();
+      },
+
       heroSlides: initialHeroSlides,
       updateHeroSlide: (id, updates) => {
         set((state) => ({
@@ -1138,7 +1194,7 @@ export const useAdminStore = create(
       // Older saves still hold reviews/customers/products/enquiries; ignore them so only backend data is shown
       merge: (persisted, current) => {
         // faqs / faqCategories are from before the FAQ page came from the backend (now faqPage)
-        const { orders, milestones, reviews, customers, products, combos, enquiries, subscribers, contactSection, ourStory, faqs, faqCategories, policies, ...rest } =
+        const { orders, milestones, reviews, customers, products, combos, enquiries, subscribers, contactSection, ourStory, faqs, faqCategories, policies, footer, ...rest } =
           persisted || {};
         // Pages cached before they came from the backend have no formTitle / seoTitle; drop those
         return {
@@ -1185,6 +1241,7 @@ export const useAdminStore = create(
         // Our Story page cache (refreshed from the backend on every visit)
         ourStory: state.ourStory,
         // policies are not cached: they always come fresh from the backend (loadPolicies)
+        // footer is not cached: it always comes fresh from the backend (loadFooter)
         activityLogs: state.activityLogs
       })
     }

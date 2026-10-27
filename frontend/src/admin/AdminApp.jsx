@@ -15,6 +15,7 @@ import { HomepageManagerPage } from './pages/cms/HomepageManagerPage';
 import { OurStoryPageCMS } from './pages/cms/OurStoryPageCMS';
 import { PolicyPagesCMS } from './pages/cms/PolicyPagesCMS';
 import { ContactPageCMS } from './pages/cms/ContactPageCMS';
+import { FooterCMS } from './pages/cms/FooterCMS';
 import { BannersPage } from './pages/cms/BannersPage';
 import { MarketingPage } from './pages/MarketingPage';
 import { ReportsPage } from './pages/ReportsPage';
@@ -86,6 +87,7 @@ export const AdminApp = () => {
         <Route path="cms/story" element={<OurStoryPageCMS />} />
         <Route path="cms/contact" element={<ContactPageCMS />} />
         <Route path="cms/policies" element={<PolicyPagesCMS />} />
+        <Route path="cms/footer" element={<FooterCMS />} />
         <Route path="cms/pages" element={<Navigate to="/admin/cms/policies" replace />} />
         <Route path="cms/banners" element={<BannersPage />} />
 
