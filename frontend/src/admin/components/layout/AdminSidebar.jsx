@@ -73,8 +73,8 @@ export const AdminSidebar = ({ mobileOpen = false, onMobileClose }) => {
 
   const bottomNavItems = [
     { label: 'Inquiries', path: '/admin/marketing', icon: MessageSquareText, badge: newEnquiriesCount > 0 ? newEnquiriesCount : null, badgeColor: 'bg-[#C8962E] text-[#04403B]' },
-    { label: 'Reports', path: '/admin/reports', icon: BarChart3 },
     { label: 'SEO', path: '/admin/seo', icon: Search },
+    { label: 'Reports', path: '/admin/reports', icon: BarChart3 },
   ];
 
   const isCurrentActive = (path) => {
