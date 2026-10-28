@@ -16,8 +16,9 @@ const formatKey = (key) =>
  * First click selects that day at once, a second click on another day makes it a range.
  * Calls onChange(from, to) with 'YYYY-MM-DD' strings.
  * size 'toolbar' = same height as the Export CSV button.
+ * inline = the calendar is always shown in place (no button or popup), e.g. inside another popover.
  */
-export const DateRangePicker = ({ from, to, onChange, placeholder = 'Select dates', size = 'md', defaultOpen = false }) => {
+export const DateRangePicker = ({ from, to, onChange, placeholder = 'Select dates', size = 'md', defaultOpen = false, inline = false }) => {
   // defaultOpen: the calendar is already open when it appears (right after "Custom Range" is chosen)
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [month, setMonth] = useState(() => {
@@ -34,7 +35,7 @@ export const DateRangePicker = ({ from, to, onChange, placeholder = 'Select date
     setPendingStart(null);
     setHoverKey(null);
   };
-  useClickOutside(ref, isOpen, close);
+  useClickOutside(ref, isOpen && !inline, close);
 
   const todayKey = toKey(new Date());
 
@@ -74,21 +75,29 @@ export const DateRangePicker = ({ from, to, onChange, placeholder = 'Select date
 
   return (
     <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => (isOpen ? close() : setIsOpen(true))}
-        className={`flex items-center gap-2 px-3.5 ${size === 'toolbar' ? 'py-2' : 'py-2.5'} rounded-xl border text-xs whitespace-nowrap transition-all bg-stone-50/80 dark:bg-stone-800/80 hover:bg-white dark:hover:bg-stone-800 ${
-          isOpen
-            ? 'border-emerald-600 ring-2 ring-emerald-deep/15'
-            : 'border-stone-200 dark:border-stone-700'
-        } ${from ? 'text-ink dark:text-stone-100 font-semibold' : 'text-stone-400'}`}
-      >
-        <Calendar className="w-3.5 h-3.5 text-emerald-deep dark:text-emerald-400" />
-        <span>{label}</span>
-      </button>
+      {!inline && (
+        <button
+          type="button"
+          onClick={() => (isOpen ? close() : setIsOpen(true))}
+          className={`flex items-center gap-2 px-3.5 ${size === 'toolbar' ? 'py-2' : 'py-2.5'} rounded-xl border text-xs whitespace-nowrap transition-all bg-stone-50/80 dark:bg-stone-800/80 hover:bg-white dark:hover:bg-stone-800 ${
+            isOpen
+              ? 'border-emerald-600 ring-2 ring-emerald-deep/15'
+              : 'border-stone-200 dark:border-stone-700'
+          } ${from ? 'text-ink dark:text-stone-100 font-semibold' : 'text-stone-400'}`}
+        >
+          <Calendar className="w-3.5 h-3.5 text-emerald-deep dark:text-emerald-400" />
+          <span>{label}</span>
+        </button>
+      )}
 
-      {isOpen && (
-        <div className="absolute right-0 top-full mt-2 z-50 w-72 p-3 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 shadow-xl">
+      {(isOpen || inline) && (
+        <div
+          className={
+            inline
+              ? 'w-full p-3 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700'
+              : 'absolute right-0 top-full mt-2 z-50 w-72 p-3 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 shadow-xl'
+          }
+        >
           {/* Month navigation */}
           <div className="flex items-center justify-between mb-2">
             <button
@@ -149,7 +158,7 @@ export const DateRangePicker = ({ from, to, onChange, placeholder = 'Select date
             <span className="text-[10px] text-stone-400">
               {pendingStart ? 'Click another date for a range' : 'Pick a date, or a start and end date'}
             </span>
-            {from && (
+            {from && !inline && (
               <button
                 type="button"
                 onClick={() => {

@@ -143,9 +143,19 @@ export const DashboardPage = () => {
     }
   };
 
-  const applyPreset = (days) => {
-    setStartDate(toDateInput(addDays(new Date(), -(days - 1))));
-    setEndDate(toDateInput(new Date()));
+  // Every choice in the date popup filters the dashboard straight away
+  const applyDates = (from, to) => {
+    setStartDate(from);
+    setEndDate(to);
+    setTimeRange('custom');
+  };
+  const applyPreset = (days) => applyDates(toDateInput(addDays(new Date(), -(days - 1))), toDateInput(new Date()));
+  const applyMonth = (offset) => {
+    const now = new Date();
+    applyDates(
+      toDateInput(new Date(now.getFullYear(), now.getMonth() + offset, 1)),
+      toDateInput(offset === 0 ? now : new Date(now.getFullYear(), now.getMonth() + offset + 1, 0))
+    );
   };
 
   const refreshDashboard = async () => {
@@ -403,7 +413,7 @@ export const DashboardPage = () => {
                       </div>
                       <div>
                         <h4 className="text-xs font-bold text-text">Select Date Range</h4>
-                        <p className="text-[10px] text-muted">Filter analytics by custom dates</p>
+                        <p className="text-[10px] text-muted">Pick a date, or two dates for a range. It applies instantly.</p>
                       </div>
                     </div>
                     <button
@@ -415,71 +425,41 @@ export const DashboardPage = () => {
                     </button>
                   </div>
 
-                  {/* Quick Presets */}
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-semibold text-text-2">Quick Presets</label>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {[
-                        { label: 'Last 7 Days', days: 7 },
-                        { label: 'Last 14 Days', days: 14 },
-                        { label: 'Last 30 Days', days: 30 },
-                        { label: 'Last 60 Days', days: 60 }
-                      ].map((preset) => (
-                        <button
-                          key={preset.label}
-                          type="button"
-                          onClick={() => applyPreset(preset.days)}
-                          className="px-2.5 py-1.5 rounded-lg border border-border text-[11px] font-medium text-text-2 hover:bg-surface-tint hover:border-primary/40 hover:text-primary transition-all text-left"
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
-                    </div>
+                  {/* Quick presets: one click filters the dashboard */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { label: 'Last 7 Days', run: () => applyPreset(7) },
+                      { label: 'Last 14 Days', run: () => applyPreset(14) },
+                      { label: 'Last 30 Days', run: () => applyPreset(30) },
+                      { label: 'Last 60 Days', run: () => applyPreset(60) },
+                      { label: 'This Month', run: () => applyMonth(0) },
+                      { label: 'Last Month', run: () => applyMonth(-1) }
+                    ].map((preset) => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={preset.run}
+                        className="px-2.5 py-1.5 rounded-full border border-border text-[11px] font-medium text-text-2 hover:bg-surface-tint hover:border-primary/40 hover:text-primary transition-all"
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
                   </div>
 
-                  {/* Calendar: pick a start and an end date (the same day twice = one day) */}
-                  <div className="space-y-1 pt-1">
-                    <label className="text-[11px] font-semibold text-text-2">Custom Dates</label>
-                    <DateRangePicker
-                      from={startDate}
-                      to={endDate}
-                      onChange={(from, to) => {
-                        setStartDate(from);
-                        setEndDate(to);
-                      }}
-                    />
-                  </div>
+                  {/* Calendar: click a date, then another date for a range */}
+                  <DateRangePicker inline from={startDate} to={endDate} onChange={applyDates} />
 
-                  {/* Modal Action Buttons */}
                   <div className="flex items-center justify-between pt-3 border-t border-border">
                     <span className="text-[11px] text-muted">
-                      {formatDateLabel(startDate)} → {formatDateLabel(endDate)}
+                      {startDate === endDate ? formatDateLabel(startDate) : `${formatDateLabel(startDate)} → ${formatDateLabel(endDate)}`}
                     </span>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setCustomDateOpen(false)}
-                        className="px-3 py-1.5 rounded-xl text-xs font-semibold text-text-2 hover:bg-surface-2 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setTimeRange('custom');
-                          setCustomDateOpen(false);
-                          triggerKapeeCelebration();
-                          addToast({
-                            type: 'success',
-                            title: 'Date Range Applied',
-                            message: `Metrics filtered for ${formatDateLabel(startDate)} to ${formatDateLabel(endDate)}.`
-                          });
-                        }}
-                        className="btn-primary text-xs !py-1.5 !px-3 font-semibold shadow-xs"
-                      >
-                        Apply Range
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setCustomDateOpen(false)}
+                      className="btn-primary text-xs !py-1.5 !px-4 font-semibold shadow-xs"
+                    >
+                      Done
+                    </button>
                   </div>
                 </div>
               </>
