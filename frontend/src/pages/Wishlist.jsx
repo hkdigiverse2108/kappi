@@ -7,6 +7,7 @@ import { FadeIn } from '../components/common/MotionWrapper';
 import { useWishlistStore } from '../store/useWishlistStore';
 import { useCartStore } from '../store/useCartStore';
 import { useProductStore } from '../store/useProductStore';
+import { firstAvailableVariant, isOutOfStock } from '../utils/stock';
 import { ProductCard } from '../components/product/ProductCard';
 import { confirmDelete } from '../store/useConfirmStore';
 
@@ -20,7 +21,7 @@ export const Wishlist = () => {
     wishlist.forEach((item) => {
       addItem({
         product: item,
-        variant: item.variants?.[0],
+        variant: firstAvailableVariant(item),
         quantity: 1
       });
     });
@@ -164,16 +165,22 @@ export const Wishlist = () => {
 
                 <button
                   onClick={() => {
+                    if (isOutOfStock(item)) return;
                     addItem({
                       product: item,
-                      variant: item.variants?.[0],
+                      variant: firstAvailableVariant(item),
                       quantity: 1
                     });
                     setIsCartOpen(true);
                   }}
-                  className="btn-primary w-full text-xs py-2.5 flex items-center justify-center gap-1.5 cursor-pointer"
+                  aria-disabled={isOutOfStock(item)}
+                  className={
+                    isOutOfStock(item)
+                      ? 'w-full text-xs py-2.5 rounded-xl font-bold bg-red-50 text-red-700 border border-red-300 cursor-not-allowed flex items-center justify-center gap-1.5'
+                      : 'btn-primary w-full text-xs py-2.5 flex items-center justify-center gap-1.5 cursor-pointer'
+                  }
                 >
-                  <ShoppingBag className="w-3.5 h-3.5" /> Move to Cart
+                  <ShoppingBag className="w-3.5 h-3.5" /> {isOutOfStock(item) ? 'Out of Stock' : 'Move to Cart'}
                 </button>
               </div>
             </motion.div>

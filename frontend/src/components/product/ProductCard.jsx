@@ -4,6 +4,7 @@ import { Heart, ShoppingBag, Eye, Star, Flame } from 'lucide-react';
 import { useCartStore } from '../../store/useCartStore';
 import { useWishlistStore } from '../../store/useWishlistStore';
 import { useUIStore } from '../../store/useUIStore';
+import { isOutOfStock, isLowStock as isProductLowStock, isVariantAvailable } from '../../utils/stock';
 
 export const getShortVariantName = (name) => {
   if (!name) return '';
@@ -40,8 +41,10 @@ export const ProductCard = ({ product }) => {
     ((selectedVariant.mrp - selectedVariant.price) / selectedVariant.mrp) * 100
   );
 
-  const isSoldOut = product.stock === 0;
-  const isLowStock = product.stock > 0 && product.stock <= 8;
+  // Stock is set in Admin > Products > Quantity in Stock: 0 = Out of Stock, and a pack bigger than the stock left is unavailable
+  const isProductSoldOut = isOutOfStock(product);
+  const isSoldOut = isProductSoldOut || !isVariantAvailable(product, selectedVariant);
+  const isLowStock = isProductLowStock(product);
 
   const handleAddToCart = (e) => {
     e.preventDefault();
@@ -84,19 +87,12 @@ export const ProductCard = ({ product }) => {
           <img
             src={isHovered && product.images[1] ? product.images[1] : product.images[0]}
             alt={product.title}
-            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+            className={`w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-108 ${
+              isProductSoldOut ? 'grayscale-[40%]' : ''
+            }`}
             loading="lazy"
           />
         </Link>
-
-        {/* Top Badges (Only Sold Out if applicable) */}
-        {isSoldOut && (
-          <div className="absolute top-3 left-3 z-10">
-            <span className="px-2.5 py-1 text-[10px] font-bold rounded-full bg-error text-white uppercase tracking-wider shadow-xs">
-              Sold Out
-            </span>
-          </div>
-        )}
 
         {/* Wishlist Button with Tactile Pop */}
         <button
@@ -154,6 +150,8 @@ export const ProductCard = ({ product }) => {
                   key={v.id}
                   onClick={(e) => handleSelectVariant(e, idx)}
                   className={`text-[10px] sm:text-[10.5px] font-semibold px-2 py-0.5 sm:px-2 sm:py-0.5 rounded-lg border transition-all whitespace-nowrap ${
+                    !isVariantAvailable(product, v) ? 'line-through ' : ''
+                  }${
                     selectedVariantIndex === idx
                       ? 'bg-emerald-deep text-white border-emerald-deep shadow-xs'
                       : 'bg-stone-50 text-stone-700 border-stone-200 hover:border-emerald-300 hover:bg-stone-100'
@@ -197,15 +195,15 @@ export const ProductCard = ({ product }) => {
           {/* Add to Cart Button */}
           <button
             onClick={handleAddToCart}
-            disabled={isSoldOut}
+            aria-disabled={isSoldOut}
             className={`w-full text-xs font-bold py-2.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-xs group/btn ${
               isSoldOut
-                ? 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                ? 'bg-red-50 text-red-700 border border-red-300 cursor-not-allowed shadow-none'
                 : 'bg-emerald-deep hover:bg-emerald text-white hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]'
             }`}
           >
             <ShoppingBag className="w-3.5 h-3.5 transition-transform duration-200 group-hover/btn:-rotate-12 group-hover/btn:scale-110" />
-            <span>{isSoldOut ? 'Sold Out' : 'Add to Cart'}</span>
+            <span>{isSoldOut ? 'Out of Stock' : 'Add to Cart'}</span>
           </button>
         </div>
       </div>

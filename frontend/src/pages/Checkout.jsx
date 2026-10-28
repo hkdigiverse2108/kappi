@@ -16,6 +16,7 @@ import { Helmet } from 'react-helmet-async';
 import { Logo } from '../components/common/Logo';
 import { useCartStore } from '../store/useCartStore';
 import { useUserStore } from '../store/useUserStore';
+import { CouponField } from '../components/cart/CouponField';
 import { placeOrder } from '../api/orderApi';
 import { useAdminStore } from '../admin/store/adminStore';
 
@@ -29,33 +30,67 @@ export const Checkout = () => {
     getCouponDiscount,
     getExtraTierDiscount,
     getFinalTotal,
+    getPaymentAdjustments,
     coupon,
     orderNote,
     clearCart
   } = useCartStore();
 
-  const { user, isLoggedIn, loadMyOrders, addAddress } = useUserStore();
+  const { user, isLoggedIn, loadMyOrders, addAddress, updateAddress, setDefaultAddress } = useUserStore();
 
   // Steps: 1: Shipping Address, 2: Payment
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [stepError, setStepError] = useState('');
+  const [stepError, setStepErrorMessage] = useState('');
   const [orderError, setOrderError] = useState('');
   const [showMobileSummary, setShowMobileSummary] = useState(false);
 
   // Form Fields
   const [email, setEmail] = useState(user?.email || '');
-  const [phone, setPhone] = useState(user?.phone || '');
-  // Prefilled from the logged-in customer's name and default address (empty for guests)
-  const savedAddress = user?.addresses?.find((a) => a.isDefault) || user?.addresses?.[0];
-  const [firstName, setFirstName] = useState(user?.name?.split(' ')[0] || '');
-  const [lastName, setLastName] = useState(user?.name?.split(' ').slice(1).join(' ') || '');
+  // Prefilled from the logged-in customer's default address (empty for guests)
+  const savedAddresses = (isLoggedIn && user?.addresses) || [];
+  const savedAddress = savedAddresses.find((a) => a.isDefault) || savedAddresses[0];
+  const fullName = savedAddress?.name || user?.name || '';
+  const [phone, setPhone] = useState(savedAddress?.phone || user?.phone || '');
+  const [firstName, setFirstName] = useState(fullName.split(' ')[0] || '');
+  const [lastName, setLastName] = useState(fullName.split(' ').slice(1).join(' ') || '');
   const [addressLine, setAddressLine] = useState(savedAddress?.addressLine1 || '');
   const [pincode, setPincode] = useState(savedAddress?.pincode || '');
   const [city, setCity] = useState(savedAddress?.city || '');
   const [state, setState] = useState(savedAddress?.state || '');
-  // Signed-in customers can keep this address in My Account > Addresses (ticked when they have none yet)
-  const [saveAddress, setSaveAddress] = useState(!user?.addresses?.length);
+  // Saved address the order ships to (null while typing a new one); clicking one copies
+  // its fields into the address form, where they can be edited
+  const [selectedAddressId, setSelectedAddressId] = useState(savedAddress?.id || null);
+  // Signed-in customers can keep this address in their profile as the default (ticked when they have none yet)
+  const [saveAddress, setSaveAddress] = useState(!savedAddresses.length);
+
+  const fillAddressForm = (a) => {
+    const name = a?.name || user?.name || '';
+    setFirstName(name.split(' ')[0] || '');
+    setLastName(name.split(' ').slice(1).join(' ') || '');
+    if (a?.phone) setPhone(a.phone);
+    setAddressLine(a?.addressLine1 || '');
+    setPincode(a?.pincode || '');
+    setCity(a?.city || '');
+    setState(a?.state || '');
+  };
+
+  const handleSelectAddress = (a) => {
+    setSelectedAddressId(a.id);
+    fillAddressForm(a);
+    setSaveAddress(false);
+    setStepErrorMessage('');
+  };
+
+  const handleNewAddress = () => {
+    setSelectedAddressId(null);
+    setAddressLine('');
+    setPincode('');
+    setCity('');
+    setState('');
+    setSaveAddress(true);
+    setStepErrorMessage('');
+  };
 
   // Payment Option - only the ones switched on in Admin > Delivery & Payments > Payment Gateway
   const paymentSettings = useAdminStore((s) => s.paymentSettings);
@@ -112,7 +147,31 @@ export const Checkout = () => {
   const shippingFee = getShippingFee();
   const couponDiscount = getCouponDiscount();
   const extraTierDiscount = getExtraTierDiscount();
-  const finalTotal = getFinalTotal();
+  // COD charge / prepaid discount set in Admin > Delivery & Payments, for the payment option chosen
+  const { codCharge, prepaidDiscount } = getPaymentAdjustments(paymentSettings, selectedPayment);
+  const finalTotal = Math.max(0, getFinalTotal() - prepaidDiscount + codCharge);
+  // What each payment option adds or saves, shown on its card
+  // Badge and strip shown on a payment option for its COD charge / prepaid discount
+  const paymentNote = (id) => {
+    const { codCharge: charge, prepaidDiscount: discount } = getPaymentAdjustments(paymentSettings, id);
+    const rule = paymentSettings?.[id === 'cod' ? 'codCharge' : 'prepaidDiscount'];
+    const percent = rule?.type === 'percent' ? ` (${rule.value}%)` : '';
+    if (charge) {
+      return {
+        tone: 'cod',
+        badge: `+₹${charge} Extra`,
+        text: `An extra ₹${charge}${percent} COD handling charge is added to this order.`
+      };
+    }
+    if (discount) {
+      return {
+        tone: 'prepaid',
+        badge: `Save ₹${discount}`,
+        text: `Pay online and get ₹${discount}${percent} off instantly on this order.`
+      };
+    }
+    return null;
+  };
 
   if (items.length === 0) {
     return (
@@ -127,20 +186,38 @@ export const Checkout = () => {
 
   // Step 1 is not a <form>, so its required fields are checked here before moving to payment
   const handleContinueToPayment = () => {
+    const failStep = (message) => setStepErrorMessage(message);
     const missing = [email, phone, firstName, lastName, addressLine, pincode, city, state].some((v) => !String(v).trim());
-    if (missing) return setStepError('Please fill in all the required (*) fields.');
-    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return setStepError('Please enter a valid email address.');
-    if (phone.replace(/\D/g, '').length < 10) return setStepError('Please enter a valid 10-digit mobile number.');
-    if (!/^\d{6}$/.test(pincode.trim())) return setStepError('Please enter a valid 6-digit pincode.');
-    setStepError('');
+    if (missing) return failStep('Please fill in all the required (*) fields.');
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return failStep('Please enter a valid email address.');
+    if (phone.replace(/\D/g, '').length < 10) return failStep('Please enter a valid 10-digit mobile number.');
+    if (!/^\d{6}$/.test(pincode.trim())) return failStep('Please enter a valid 6-digit pincode.');
+    setStepErrorMessage('');
     setCurrentStep(2);
   };
 
-  // Is the address typed here already one of the customer's saved addresses?
+  // Address as it would be saved to the customer's profile
+  const addressData = {
+    name: `${firstName} ${lastName}`.trim(),
+    phone: phone.trim(),
+    addressLine1: addressLine.trim(),
+    city: city.trim(),
+    state: state.trim(),
+    pincode: pincode.trim()
+  };
   const sameText = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
-  const alreadySaved = (user?.addresses || []).some(
-    (a) => sameText(a.addressLine1, addressLine) && sameText(a.pincode, pincode) && sameText(a.city, city)
-  );
+  const selectedAddress = savedAddresses.find((a) => a.id === selectedAddressId);
+  // Has the customer edited the selected saved address in the form?
+  const selectedAddressEdited =
+    !!selectedAddress && Object.keys(addressData).some((key) => !sameText(selectedAddress[key], addressData[key]));
+  // A new address typed here that matches one already saved is not saved twice
+  const matchingAddress =
+    selectedAddress ||
+    savedAddresses.find(
+      (a) => sameText(a.addressLine1, addressLine) && sameText(a.pincode, pincode) && sameText(a.city, city)
+    );
+  // Nothing to save when the order ships to the unchanged default address
+  const canSaveAddress = isLoggedIn && !(matchingAddress?.isDefault && !selectedAddressEdited);
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
@@ -164,18 +241,17 @@ export const Checkout = () => {
       });
 
       // A problem saving the address must not stop the order, which is already placed
-      if (isLoggedIn && saveAddress && !alreadySaved) {
+      // Ticked "save" = this address (with any edits) becomes the profile's default address
+      if (canSaveAddress && saveAddress) {
         try {
-          await addAddress({
-            name: `${firstName} ${lastName}`.trim(),
-            type: 'Home',
-            phone: phone.trim(),
-            addressLine1: addressLine.trim(),
-            city: city.trim(),
-            state: state.trim(),
-            pincode: pincode.trim(),
-            isDefault: !user?.addresses?.length
-          });
+          if (!matchingAddress) {
+            await addAddress({ ...addressData, type: 'Home', isDefault: true });
+          } else {
+            if (selectedAddressEdited) {
+              await updateAddress(matchingAddress.id, { ...addressData, type: matchingAddress.type || 'Home' });
+            }
+            if (!matchingAddress.isDefault) await setDefaultAddress(matchingAddress.id);
+          }
         } catch (err) {
           console.error('Could not save the address:', err);
         }
@@ -229,8 +305,31 @@ export const Checkout = () => {
                 <span className="font-bold text-emerald-deep">₹{i.price * i.quantity}</span>
               </div>
             ))}
+            {coupon && (
+              <div className="flex justify-between text-success font-semibold">
+                <span>Coupon ({coupon.code})</span>
+                <span>-₹{couponDiscount}</span>
+              </div>
+            )}
+            {prepaidDiscount > 0 && (
+              <div className="flex justify-between text-success font-semibold">
+                <span>Prepaid Discount</span>
+                <span>-₹{prepaidDiscount}</span>
+              </div>
+            )}
+            {codCharge > 0 && (
+              <div className="flex justify-between text-ink font-semibold">
+                <span>COD Charge</span>
+                <span>+₹{codCharge}</span>
+              </div>
+            )}
           </div>
         )}
+
+        {/* Coupon stays visible on mobile, e.g. right after Buy Now */}
+        <div className="pt-3">
+          <CouponField />
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
@@ -283,6 +382,7 @@ export const Checkout = () => {
 
                 <div className="pt-4 border-t border-emerald-soft">
                   <h2 className="font-serif text-xl font-bold text-ink mb-3">Shipping Address</h2>
+
                   <div className="space-y-4 text-xs">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -354,10 +454,64 @@ export const Checkout = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Addresses saved in the customer's profile, below the form: clicking one fills the fields above */}
+                  {savedAddresses.length > 0 && (
+                    <div className="mt-6">
+                      <h3 className="text-xs font-bold text-ink mb-2">Saved Addresses</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                        {savedAddresses.map((a) => {
+                          const isSelected = a.id === selectedAddressId;
+                          return (
+                            <button
+                              key={a.id}
+                              type="button"
+                              onClick={() => handleSelectAddress(a)}
+                              aria-pressed={isSelected}
+                              className={`relative min-w-0 h-full text-left p-3.5 rounded-xl border transition-colors ${
+                                isSelected ? 'border-emerald bg-emerald/5 ring-1 ring-emerald' : 'border-emerald-soft hover:border-emerald/60'
+                              }`}
+                            >
+                              {isSelected && <CheckCircle2 className="absolute top-3 right-3 w-4 h-4 text-emerald" />}
+                              <div className="flex items-center gap-1.5 flex-wrap pr-5">
+                                {a.type && (
+                                  <span className="px-1.5 py-0.5 rounded bg-ivory border border-emerald-soft text-[10px] font-bold uppercase text-muted">
+                                    {a.type}
+                                  </span>
+                                )}
+                                {a.isDefault && (
+                                  <span className="px-1.5 py-0.5 rounded bg-emerald text-white text-[10px] font-bold uppercase">
+                                    Default
+                                  </span>
+                                )}
+                              </div>
+                              <p className="font-bold text-ink mt-2 truncate">{a.name}</p>
+                              <p className="text-muted mt-0.5 line-clamp-2">
+                                {a.addressLine1}, {a.city}, {a.state} - {a.pincode}
+                              </p>
+                              {a.phone && <p className="text-muted mt-0.5">Mobile: {a.phone}</p>}
+                            </button>
+                          );
+                        })}
+
+                        <button
+                          type="button"
+                          onClick={handleNewAddress}
+                          aria-pressed={!selectedAddressId}
+                          className={`min-h-[110px] h-full flex flex-col items-center justify-center gap-1 p-3.5 rounded-xl border border-dashed text-xs font-bold text-emerald transition-colors ${
+                            !selectedAddressId ? 'border-emerald bg-emerald/5' : 'border-emerald-soft hover:border-emerald'
+                          }`}
+                        >
+                          <span className="text-lg leading-none">+</span>
+                          New Address
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {/* Save to profile (signed-in customers only) */}
-                {isLoggedIn && !alreadySaved && (
+                {/* Save to profile as the default address (signed-in customers only) */}
+                {canSaveAddress && (
                   <label className="flex items-start gap-2.5 p-3.5 rounded-xl bg-ivory border border-emerald-soft cursor-pointer select-none">
                     <input
                       type="checkbox"
@@ -366,8 +520,10 @@ export const Checkout = () => {
                       className="mt-0.5 w-4 h-4 rounded text-emerald focus:ring-emerald"
                     />
                     <span>
-                      <span className="block text-xs font-bold text-ink">Save this address to my profile</span>
-                      <span className="block text-[11px] text-muted">Use it again next time from My Account &gt; Addresses.</span>
+                      <span className="block text-xs font-bold text-ink">
+                        {selectedAddressEdited ? 'Save these changes to my profile' : 'Save this address to my profile'} as my default address
+                      </span>
+                      <span className="block text-[11px] text-muted">It will be picked first next time and shown in My Account &gt; Addresses.</span>
                     </span>
                   </label>
                 )}
@@ -415,31 +571,69 @@ export const Checkout = () => {
                   {paymentOptions.length === 0 && (
                     <p className="text-xs text-muted">Loading payment options...</p>
                   )}
-                  {paymentOptions.map(({ id, icon: Icon, title, hint }) => (
-                    <div
-                      key={id}
-                      onClick={() => setPaymentMethod(id)}
-                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                        selectedPayment === id ? 'border-emerald bg-emerald-soft/30' : 'border-emerald-soft'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Icon className="w-5 h-5 text-emerald" />
-                          <div>
-                            <p className="text-xs font-bold text-ink">{title}</p>
-                            <p className="text-[11px] text-muted">{hint}</p>
+                  {paymentOptions.map(({ id, icon: Icon, title, hint }) => {
+                    const note = paymentNote(id);
+                    const isSelected = selectedPayment === id;
+                    const isPrepaid = note?.tone === 'prepaid';
+                    return (
+                      <div
+                        key={id}
+                        onClick={() => setPaymentMethod(id)}
+                        className={`relative rounded-2xl border-2 cursor-pointer transition-all overflow-hidden ${
+                          isSelected ? 'border-emerald bg-emerald-soft/30 shadow-soft' : 'border-emerald-soft hover:border-emerald/50'
+                        }`}
+                      >
+                        <div className="p-4 flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <span
+                              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                                isSelected ? 'bg-emerald text-white' : 'bg-ivory text-emerald border border-emerald-soft'
+                              }`}
+                            >
+                              <Icon className="w-5 h-5" />
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold text-ink flex items-center gap-2 flex-wrap">
+                                {title}
+                                {isPrepaid && (
+                                  <span className="px-1.5 py-0.5 rounded bg-success text-white text-[9px] font-extrabold uppercase tracking-wider">
+                                    Best Value
+                                  </span>
+                                )}
+                              </p>
+                              <p className="text-[11px] text-muted">{hint}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 shrink-0">
+                            {note && (
+                              <span
+                                className={`px-2.5 py-1 rounded-lg text-xs font-extrabold whitespace-nowrap ${
+                                  isPrepaid ? 'bg-success text-white' : 'bg-amber-100 text-amber-800 border border-amber-300'
+                                }`}
+                              >
+                                {note.badge}
+                              </span>
+                            )}
+                            <input
+                              type="radio"
+                              checked={isSelected}
+                              onChange={() => setPaymentMethod(id)}
+                              className="w-4 h-4 text-emerald"
+                            />
                           </div>
                         </div>
-                        <input
-                          type="radio"
-                          checked={selectedPayment === id}
-                          onChange={() => setPaymentMethod(id)}
-                          className="text-emerald"
-                        />
+                        {note && (
+                          <div
+                            className={`px-4 py-2 text-[11px] font-semibold border-t ${
+                              isPrepaid ? 'bg-success/10 text-success border-success/20' : 'bg-amber-50 text-amber-800 border-amber-200'
+                            }`}
+                          >
+                            {note.text}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {orderError && (
@@ -489,6 +683,10 @@ export const Checkout = () => {
                 ))}
               </div>
 
+              <div className="pt-3 border-t border-emerald-soft">
+                <CouponField />
+              </div>
+
               {/* Breakdown */}
               <div className="space-y-2 text-xs text-muted pt-3 border-t border-emerald-soft">
                 <div className="flex justify-between">
@@ -507,10 +705,22 @@ export const Checkout = () => {
                     <span>-₹{couponDiscount}</span>
                   </div>
                 )}
+                {prepaidDiscount > 0 && (
+                  <div className="flex justify-between text-success font-semibold">
+                    <span>Prepaid Discount</span>
+                    <span>-₹{prepaidDiscount}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span>Shipping</span>
                   <span>{shippingFee === 0 ? <strong className="text-success">FREE</strong> : `₹${shippingFee}`}</span>
                 </div>
+                {codCharge > 0 && (
+                  <div className="flex justify-between">
+                    <span>COD Charge</span>
+                    <span className="font-semibold text-ink">+₹{codCharge}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-base font-bold text-ink pt-2 border-t border-emerald-soft">
                   <span>Total Amount</span>
                   <span className="text-xl font-extrabold text-emerald-deep">₹{finalTotal}</span>

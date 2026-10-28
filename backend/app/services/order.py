@@ -13,7 +13,11 @@ from app.repository import order as order_repo
 from app.repository import product as product_repo
 from app.services.cart_offers import get_cart_offers
 from app.services.contact import get_contact_page
-from app.services.payment_settings import enabled_payment_methods
+from app.models.order_category import DEFAULT_ORDER_CATEGORY_ID
+from app.services import stock as stock_service
+from app.services.order_category import check_category
+from app.services.stock import NOT_SHIPPED_STATUSES, STOCK_RETURNED_STATUSES, pieces_of
+from app.services.payment_settings import enabled_payment_methods, get_payment_settings, payment_adjustments
 from app.utils.email import send_email
 from app.utils.email_templates import order_confirmation
 
@@ -72,6 +76,8 @@ async def _priced_items(db, items: list[dict]) -> list[dict]:
             "price": price,
             "mrp": mrp,
             "quantity": item["quantity"],
+            # Units of stock one pack uses (a pack of 3 = 3)
+            "pieces": pieces_of(variant),
             "image": (product.get("images") or [""])[0],
             "isFreeGift": False,
         })
@@ -151,7 +157,8 @@ async def _send_confirmation(order: dict, confirmed: bool = False, contact: dict
 
 async def place_order(db, data: dict, user: dict | None, background_tasks: BackgroundTasks, site: str | None = None) -> dict:
     """Order placed from the website checkout. Prices and the total are worked out here, not taken from the browser."""
-    if data["paymentMethod"] not in await enabled_payment_methods(db):
+    payment_settings = await get_payment_settings(db)
+    if data["paymentMethod"] not in enabled_payment_methods(payment_settings):
         raise HTTPException(status_code=400, detail="This payment option is not available right now. Please choose another one.")
     items =await _priced_items(db, [i for i in data["items"] if not i["isFreeGift"]])
     if not items:
@@ -174,13 +181,19 @@ async def place_order(db, data: dict, user: dict | None, background_tasks: Backg
     coupon_code, coupon_discount = await _coupon_discount(db, data.get("couponCode"), items, subtotal, shipping_fee)
     extra = offers["extraDiscount"]
     tier_discount = _round(subtotal * extra["percent"] / 100) if extra["enabled"] and subtotal >= extra["threshold"] else 0
-    total = max(0, subtotal - coupon_discount - tier_discount + shipping_fee)
+    # COD charge / prepaid discount from Admin > Delivery & Payments, on the cart after the other discounts
+    cod_charge, prepaid_discount = payment_adjustments(
+        payment_settings, data["paymentMethod"], max(0, subtotal - coupon_discount - tier_discount)
+    )
+    total = max(0, subtotal - coupon_discount - tier_discount - prepaid_discount + shipping_fee + cod_charge)
 
     now = _now()
     order = {
         "id": f"ord-{uuid.uuid4().hex[:12]}",
         "orderNumber": "",
         "source": "Website",
+        # Every website order goes in the default "Website" category
+        "categoryId": DEFAULT_ORDER_CATEGORY_ID,
         "userId": user["id"] if user else None,
         "customer": data["customer"],
         "shippingAddress": data["shippingAddress"],
@@ -190,8 +203,10 @@ async def place_order(db, data: dict, user: dict | None, background_tasks: Backg
             "couponCode": coupon_code,
             "couponDiscount": coupon_discount,
             "tierDiscount": tier_discount,
-            "discount": coupon_discount + tier_discount,
+            "prepaidDiscount": prepaid_discount,
+            "discount": coupon_discount + tier_discount + prepaid_discount,
             "shippingFee": shipping_fee,
+            "codCharge": cod_charge,
             "tax": _gst_included(total),
             "total": total,
         },
@@ -207,9 +222,16 @@ async def place_order(db, data: dict, user: dict | None, background_tasks: Backg
         "adminRead": False,
         # Website the order was placed on; its emails link back to it
         "siteUrl": site,
+        # Stock was taken for this order (orders from before stock tracking never give any back)
+        "stockDeducted": True,
         "createdAt": now,
     }
-    order = await _save_new_order(db, order)
+    await stock_service.reserve(db, items)
+    try:
+        order = await _save_new_order(db, order)
+    except Exception:
+        await stock_service.release(db, items)
+        raise
     if coupon_code:
         await coupon_repo.increment_coupon_use(db, coupon_code)
     background_tasks.add_task(_send_confirmation, order, False, await _contact_details(db))
@@ -218,7 +240,12 @@ async def place_order(db, data: dict, user: dict | None, background_tasks: Backg
 
 async def create_manual_order(db, data: dict, background_tasks: BackgroundTasks, site: str | None = None) -> dict:
     """Order booked by an admin; the admin sets the prices."""
+    category_id = await check_category(db, data.get("categoryId"))
     items = [{"id": f"item-{uuid.uuid4().hex[:8]}", "isFreeGift": False, **i} for i in data["items"]]
+    products = {p["id"]: p for p in await product_repo.get_products_by_ids(db, list({i["productId"] for i in items if i.get("productId")}))}
+    for item in items:
+        variants = (products.get(item.get("productId")) or {}).get("variants") or []
+        item["pieces"] = pieces_of(next((v for v in variants if v.get("name") == item.get("variant")), None))
     subtotal = _round(sum(i["price"] * i["quantity"] for i in items))
     shipping_fee = _shipping_fee(await get_cart_offers(db), subtotal)
     total = subtotal + shipping_fee
@@ -228,6 +255,7 @@ async def create_manual_order(db, data: dict, background_tasks: BackgroundTasks,
         "id": f"ord-{uuid.uuid4().hex[:12]}",
         "orderNumber": "",
         "source": "Admin",
+        "categoryId": category_id,
         "userId": None,
         "customer": data["customer"],
         "shippingAddress": data["shippingAddress"],
@@ -254,9 +282,12 @@ async def create_manual_order(db, data: dict, background_tasks: BackgroundTasks,
         "notes": data.get("notes", ""),
         "adminRead": True,
         "siteUrl": site,
+        "stockDeducted": True,
         "createdAt": now,
     }
     order = await _save_new_order(db, order)
+    # The admin sells what is physically there, so a short stock does not block the order (it stops at 0)
+    await stock_service.take(db, items)
     # Booked by the admin = already confirmed
     background_tasks.add_task(_send_confirmation, order, True, await _contact_details(db))
     return order
@@ -289,7 +320,7 @@ async def track_order(db, order_number: str) -> dict:
         ],
         "pricing": {
             k: order["pricing"].get(k)
-            for k in ("subtotal", "couponCode", "couponDiscount", "tierDiscount", "shippingFee", "total")
+            for k in ("subtotal", "couponCode", "couponDiscount", "tierDiscount", "prepaidDiscount", "shippingFee", "codCharge", "total")
         },
         "payment": {"method": order["payment"]["method"]},
         "fulfillment": {k: order["fulfillment"].get(k) for k in ("courier", "awb", "trackingUrl", "shippedAt", "deliveredAt")},
@@ -311,6 +342,8 @@ async def update_order(db, order_id: str, data: dict, background_tasks: Backgrou
     changes = {}
     if data.get("notes") is not None:
         changes["notes"] = data["notes"]
+    if data.get("categoryId") is not None and data["categoryId"] != order.get("categoryId"):
+        changes["categoryId"] = await check_category(db, data["categoryId"])
     for field in ("courier", "awb", "trackingUrl"):
         if data.get(field) is not None:
             changes[f"fulfillment.{field}"] = data[field].strip()
@@ -323,6 +356,13 @@ async def update_order(db, order_id: str, data: dict, background_tasks: Backgrou
     if status and status != order["status"]:
         changes["status"] = status
         changes["statusHistory"] = order.get("statusHistory", []) + [{"status": status, "at": now}]
+        # Cancelled / returned orders give their stock back; bringing one back to life takes it again
+        if order.get("stockDeducted"):
+            was_returned = order["status"] in STOCK_RETURNED_STATUSES
+            if status in STOCK_RETURNED_STATUSES and not was_returned:
+                await stock_service.release(db, order["items"])
+            elif was_returned and status not in STOCK_RETURNED_STATUSES:
+                await stock_service.take(db, order["items"])
         if status == "Shipped" and not order["fulfillment"].get("shippedAt"):
             changes["fulfillment.shippedAt"] = now
         if status == "Delivered":
@@ -345,6 +385,10 @@ async def update_order(db, order_id: str, data: dict, background_tasks: Backgrou
 
 
 async def delete_order(db, order_id: str):
+    order = await order_repo.get_order(db, order_id)
     if not await order_repo.delete_order(db, order_id):
         raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found")
+    # An order that never left the warehouse gives its stock back when it is deleted
+    if order and order.get("stockDeducted") and order["status"] in NOT_SHIPPED_STATUSES:
+        await stock_service.release(db, order["items"])
     return {"deleted": order_id}

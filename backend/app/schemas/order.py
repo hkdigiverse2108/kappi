@@ -68,6 +68,8 @@ class ManualOrder(BaseModel):
     shippingAddress: OrderAddress
     items: list[ManualOrderItem] = Field(min_length=1)
     paymentMethod: str = Field(min_length=1)
+    # Order category from Admin > Orders > Categories (None = no category)
+    categoryId: str | None = None
     notes: str = ""
 
 
@@ -85,3 +87,5 @@ class OrderUpdate(BaseModel):
     awb: str | None = None
     trackingUrl: str | None = None
     notes: str | None = None
+    # "" removes the category
+    categoryId: str | None = None

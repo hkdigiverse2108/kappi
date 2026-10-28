@@ -44,6 +44,7 @@ import { uploadImage } from '../../../api/homeApi';
 import { SettingsCard, TextField } from '../../components/common/SettingsCard';
 import { useSectionForm } from '../../lib/useSectionForm';
 import { confirmDelete } from '../../../store/useConfirmStore';
+import { getHeroSlides } from '../../../components/home/HeroCarousel';
 
 const RATING_STARS_OPTIONS = [
   { value: 5, label: '⭐⭐⭐⭐⭐ (5 Stars)' },
@@ -111,13 +112,14 @@ export const HomepageManagerPage = () => {
     }
   }, [howItWorksHeader]);
 
-  // Single Hero Banner & Bottom Action Strip Form State
+  // Hero Banner Slides & Bottom Action Strip Form State
   const fileInputRef = useRef(null);
+  // Slide whose image is being picked in the shared file input
+  const uploadSlideIdRef = useRef(null);
 
   const [heroForm, setHeroForm] = useState({
-    image: heroBanner?.image || '',
-    bannerLink: heroBanner?.bannerLink || '',
-    altText: heroBanner?.altText || '',
+    slides: getHeroSlides(heroBanner),
+    slideInterval: heroBanner?.slideInterval || 5,
     showActionStrip: heroBanner?.showActionStrip !== false,
     ratingStars: heroBanner?.ratingStars || 5,
     ratingText: heroBanner?.ratingText || '',
@@ -133,14 +135,45 @@ export const HomepageManagerPage = () => {
     if (heroBanner) {
       setHeroForm((prev) => ({
         ...prev,
-        ...heroBanner
+        ...heroBanner,
+        slides: getHeroSlides(heroBanner)
       }));
     }
   }, [heroBanner]);
 
+  const updateHeroSlide = (id, updates) =>
+    setHeroForm((prev) => ({
+      ...prev,
+      slides: prev.slides.map((s) => (s.id === id ? { ...s, ...updates } : s))
+    }));
+
+  const addHeroSlide = () =>
+    setHeroForm((prev) => ({
+      ...prev,
+      slides: [...prev.slides, { id: `slide-${Date.now()}`, image: '', link: '/shop', altText: '', active: true }]
+    }));
+
+  const deleteHeroSlide = (id) =>
+    setHeroForm((prev) => ({ ...prev, slides: prev.slides.filter((s) => s.id !== id) }));
+
+  const moveHeroSlide = (index, direction) =>
+    setHeroForm((prev) => {
+      const target = index + direction;
+      if (target < 0 || target >= prev.slides.length) return prev;
+      const slides = [...prev.slides];
+      [slides[index], slides[target]] = [slides[target], slides[index]];
+      return { ...prev, slides };
+    });
+
+  const pickSlideImage = (id) => {
+    uploadSlideIdRef.current = id;
+    fileInputRef.current?.click();
+  };
+
   const handleImageFileSelect = (e) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    const slideId = uploadSlideIdRef.current;
+    if (!file || !slideId) return;
 
     if (!file.type.startsWith('image/')) {
       addToast({
@@ -153,7 +186,7 @@ export const HomepageManagerPage = () => {
 
     uploadImage(file)
       .then((url) => {
-        setHeroForm((prev) => ({ ...prev, image: url }));
+        updateHeroSlide(slideId, { image: url });
         addToast({
           type: 'success',
           title: 'Image Uploaded',
@@ -171,7 +204,7 @@ export const HomepageManagerPage = () => {
     addToast({
       type: 'success',
       title: 'Hero Settings Saved',
-      message: 'Single banner image and bottom action strip updated on the homepage.'
+      message: 'Banner slides and bottom action strip updated on the homepage.'
     });
   };
 
@@ -657,96 +690,170 @@ export const HomepageManagerPage = () => {
       </div>
 
       {/* =========================================================
-          TAB 1: SINGLE HERO BANNER & ACTION STRIP CRUD
+          TAB 1: HERO BANNER SLIDES & ACTION STRIP CRUD
          ========================================================= */}
       {activeTab === 'hero' && (
         <div className="space-y-6">
           {/* Form Settings Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Card 1: Banner Image & Links */}
+            {/* Card 1: Banner Slides (image + click destination for each) */}
             <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/80 dark:border-stone-800 p-5 space-y-4 shadow-2xs">
-              <div className="flex items-center gap-2 pb-3 border-b border-stone-100 dark:border-stone-800">
-                <ImageIcon className="w-4 h-4 text-emerald-deep dark:text-emerald-400" />
-                <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                  1. Hero Banner Image & Destination
-                </h3>
+              <div className="flex items-center justify-between gap-2 pb-3 border-b border-stone-100 dark:border-stone-800">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4 text-emerald-deep dark:text-emerald-400" />
+                  <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                    1. Hero Banner Slides ({heroForm.slides.length})
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={addHeroSlide}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-deep hover:bg-emerald-800 text-white text-xs font-semibold shadow-xs transition-all active:scale-95"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Banner</span>
+                </button>
               </div>
 
-              {/* Image Selector / Upload from Device */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageFileSelect}
+                accept="image/*"
+                className="hidden"
+              />
+
+              {heroForm.slides.length === 0 && (
+                <p className="text-xs text-stone-400 text-center py-6">
+                  No banners yet. Click Add Banner to add the first one.
+                </p>
+              )}
+
               <div className="space-y-3">
-                <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300">
-                  Select Hero Banner Image
-                </label>
-
-                {/* File Upload Box */}
-                <div className="flex flex-col sm:flex-row items-center gap-3.5 p-3.5 rounded-xl border-2 border-dashed border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-800/40 hover:border-[#0A5C55] transition-colors">
-                  {/* Selected Preview Thumbnail */}
-                  <div className="w-20 h-14 rounded-lg overflow-hidden bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shrink-0 shadow-2xs relative">
-                    {heroForm.image && (
-                      <img
-                        src={heroForm.image}
-                        alt="Banner Preview"
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                  </div>
-
-                  <div className="flex-1 space-y-1.5 text-center sm:text-left">
-                    <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
+                {heroForm.slides.map((slide, index) => (
+                  <div
+                    key={slide.id}
+                    className={`p-3.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-800/40 space-y-3 ${slide.active === false ? 'opacity-60' : ''}`}
+                  >
+                    <div className="flex items-center gap-3">
                       <button
                         type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-deep hover:bg-emerald-800 text-white text-xs font-semibold shadow-xs transition-all active:scale-95"
+                        onClick={() => pickSlideImage(slide.id)}
+                        title="Select / Upload Image"
+                        className="w-24 h-16 rounded-lg overflow-hidden bg-white dark:bg-stone-800 border-2 border-dashed border-stone-200 dark:border-stone-700 hover:border-[#0A5C55] shrink-0 flex items-center justify-center"
                       >
-                        <UploadCloud className="w-3.5 h-3.5" />
-                        <span>Select / Upload Image</span>
+                        {slide.image ? (
+                          <img src={slide.image} alt="Banner Preview" className="w-full h-full object-cover" />
+                        ) : (
+                          <UploadCloud className="w-5 h-5 text-stone-400" />
+                        )}
                       </button>
 
+                      <div className="flex-1 min-w-0">
+                        <span className="block text-xs font-bold text-stone-800 dark:text-stone-200">
+                          Banner {index + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => pickSlideImage(slide.id)}
+                          className="text-[11px] font-semibold text-emerald-deep dark:text-emerald-400 hover:underline"
+                        >
+                          {slide.image ? 'Change Image' : 'Select / Upload Image'}
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => moveHeroSlide(index, -1)}
+                          disabled={index === 0}
+                          title="Move Up"
+                          className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 disabled:opacity-30 disabled:pointer-events-none"
+                        >
+                          <ArrowUp className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveHeroSlide(index, 1)}
+                          disabled={index === heroForm.slides.length - 1}
+                          title="Move Down"
+                          className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 disabled:opacity-30 disabled:pointer-events-none"
+                        >
+                          <ArrowDown className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateHeroSlide(slide.id, { active: slide.active === false })}
+                          title={slide.active === false ? 'Show on website' : 'Hide from website'}
+                          className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800"
+                        >
+                          {slide.active === false ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            confirmDelete({
+                              title: 'Delete Banner?',
+                              message: `Delete Banner ${index + 1}? Click Save Changes to apply.`,
+                              onConfirm: () => deleteHeroSlide(slide.id)
+                            })
+                          }
+                          title="Delete"
+                          className="p-1.5 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
-                    <p className="text-[11px] text-stone-400">
-                      Select PNG, JPG, or WebP image from your computer
-                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-stone-600 dark:text-stone-400 mb-1">
+                          Click Destination URL
+                        </label>
+                        <div className="relative">
+                          <LinkIcon className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                          <input
+                            type="text"
+                            value={slide.link || ''}
+                            onChange={(e) => updateHeroSlide(slide.id, { link: e.target.value })}
+                            placeholder="/shop or https://..."
+                            className="w-full pl-8 pr-3 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-xs focus:ring-2 focus:ring-[#0A5C55] focus:outline-hidden"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-stone-600 dark:text-stone-400 mb-1">
+                          Alt / SEO Text
+                        </label>
+                        <input
+                          type="text"
+                          value={slide.altText || ''}
+                          onChange={(e) => updateHeroSlide(slide.id, { altText: e.target.value })}
+                          placeholder="KAPEE Magic Melamine Eraser Sponges"
+                          className="w-full px-3 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-xs focus:ring-2 focus:ring-[#0A5C55] focus:outline-hidden"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleImageFileSelect}
-                  accept="image/*"
-                  className="hidden"
-                />
-
-
+                ))}
               </div>
 
-              <div>
+              <div className="pt-1">
                 <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1.5">
-                  Banner Click Destination URL
-                </label>
-                <div className="relative">
-                  <LinkIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-                  <input
-                    type="text"
-                    value={heroForm.bannerLink}
-                    onChange={(e) => setHeroForm({ ...heroForm, bannerLink: e.target.value })}
-                    placeholder="/shop"
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-xs focus:ring-2 focus:ring-[#0A5C55] focus:outline-hidden"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1.5">
-                  Banner Alt / SEO Text
+                  Auto-slide Every (seconds)
                 </label>
                 <input
-                  type="text"
-                  value={heroForm.altText}
-                  onChange={(e) => setHeroForm({ ...heroForm, altText: e.target.value })}
-                  placeholder="KAPEE Magic Melamine Eraser Sponges"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-xs focus:ring-2 focus:ring-[#0A5C55] focus:outline-hidden"
+                  type="number"
+                  min={2}
+                  max={30}
+                  value={heroForm.slideInterval}
+                  onChange={(e) => setHeroForm({ ...heroForm, slideInterval: Number(e.target.value) || 5 })}
+                  className="w-32 px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-xs focus:ring-2 focus:ring-[#0A5C55] focus:outline-hidden"
                 />
+                <p className="text-[11px] text-stone-400 mt-1">
+                  Internal pages start with / (e.g. /shop). Full https:// links open in a new tab.
+                </p>
               </div>
             </div>
 

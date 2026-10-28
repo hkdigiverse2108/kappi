@@ -10,15 +10,16 @@ import {
   Gift,
   Truck,
   Percent,
-  Tag,
   ArrowRight,
   ShieldCheck,
   Check
 } from 'lucide-react';
 import { useCartStore } from '../../store/useCartStore';
+import { CouponField } from './CouponField';
 import { calculateMilestones } from '../../data/offers';
 import { cartSuggestions } from '../../utils/cartSuggestions';
 import { useProductStore } from '../../store/useProductStore';
+import { firstAvailableVariant, isOutOfStock } from '../../utils/stock';
 
 const REWARD_ICONS = { shipping: Truck, gift: Gift, discount: Percent };
 const REWARD_UNLOCKED_STYLES = {
@@ -37,6 +38,7 @@ export const CartDrawer = () => {
     isCartOpen,
     setIsCartOpen,
     updateQuantity,
+    getMaxQuantity,
     removeItem,
     getSubtotal,
     getMrpTotal,
@@ -46,9 +48,6 @@ export const CartDrawer = () => {
     getExtraTierDiscount,
     getFinalTotal,
     coupon,
-    couponError,
-    applyCoupon,
-    removeCoupon,
     orderNote,
     setOrderNote,
     addItem,
@@ -56,7 +55,6 @@ export const CartDrawer = () => {
     cartOffers
   } = useCartStore();
 
-  const [inputCoupon, setInputCoupon] = useState('');
   const [showNoteInput, setShowNoteInput] = useState(false);
 
   if (!isCartOpen) return null;
@@ -72,14 +70,6 @@ export const CartDrawer = () => {
 
   // Products chosen as "You May Also Like" for the products in the cart
   const upsellItems = cartSuggestions(items, products);
-
-  const handleApplyCoupon = (e) => {
-    e.preventDefault();
-    if (inputCoupon.trim()) {
-      const ok = applyCoupon(inputCoupon);
-      if (ok) setInputCoupon('');
-    }
-  };
 
   const handleCheckout = () => {
     setIsCartOpen(false);
@@ -198,7 +188,7 @@ export const CartDrawer = () => {
                 <div className="mt-8 text-left border-t border-emerald-soft pt-5">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted mb-3">Popular Starting Picks</p>
                   <div className="space-y-2">
-                    {products.slice(0, 2).map((p) => (
+                    {products.filter((p) => !isOutOfStock(p)).slice(0, 2).map((p) => (
                       <div key={p.id} className="flex items-center justify-between p-2 rounded-xl bg-ivory border border-emerald-soft/50">
                         <div className="flex items-center gap-2.5">
                           <img src={p.images[0]} alt={p.title} className="w-11 h-11 object-cover rounded-lg" />
@@ -208,7 +198,7 @@ export const CartDrawer = () => {
                           </div>
                         </div>
                         <button
-                          onClick={() => addItem({ product: p, variant: p.variants[0], quantity: 1 })}
+                          onClick={() => addItem({ product: p, variant: firstAvailableVariant(p), quantity: 1 })}
                           className="text-xs font-semibold px-3 py-1.5 bg-emerald text-white rounded-lg hover:bg-emerald-deep transition-colors"
                         >
                           + Add
@@ -274,7 +264,9 @@ export const CartDrawer = () => {
                             </span>
                             <button
                               onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              className="px-2 py-1 text-muted hover:text-ink hover:bg-emerald-soft transition-colors"
+                              disabled={item.quantity >= getMaxQuantity(item)}
+                              title={item.quantity >= getMaxQuantity(item) ? `Only ${getMaxQuantity(item)} in stock` : undefined}
+                              className="px-2 py-1 text-muted hover:text-ink hover:bg-emerald-soft transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                               aria-label="Increase quantity"
                             >
                               <Plus className="w-3 h-3" />
@@ -336,7 +328,7 @@ export const CartDrawer = () => {
                             </div>
                           </div>
                           <button
-                            onClick={() => addItem({ product: u, variant: u.variants[0], quantity: 1 })}
+                            onClick={() => addItem({ product: u, variant: firstAvailableVariant(u), quantity: 1 })}
                             className="px-2.5 py-1 text-[11px] font-bold text-emerald bg-emerald-soft hover:bg-emerald hover:text-white rounded-lg transition-colors shrink-0"
                           >
                             + Add
@@ -354,40 +346,7 @@ export const CartDrawer = () => {
           {items.length > 0 && (
             <div className="p-5 border-t border-emerald-soft bg-ivory/80 space-y-3">
               {/* Coupon Field */}
-              {coupon ? (
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-soft border border-emerald/30 text-xs">
-                  <div className="flex items-center gap-2">
-                    <Tag className="w-4 h-4 text-emerald" />
-                    <div>
-                      <span className="font-bold text-emerald-deep">{coupon.code}</span>
-                      <span className="text-muted ml-1.5">applied (-₹{couponDiscount})</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={removeCoupon}
-                    className="text-error font-semibold text-xs hover:underline"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleApplyCoupon} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={inputCoupon}
-                    onChange={(e) => setInputCoupon(e.target.value)}
-                    placeholder="Enter coupon (e.g. KAPEE10)"
-                    className="flex-1 text-xs px-3 py-2 rounded-xl border border-emerald-soft focus:outline-none focus:border-emerald uppercase"
-                  />
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-emerald-deep text-white text-xs font-bold rounded-xl hover:bg-emerald transition-colors"
-                  >
-                    Apply
-                  </button>
-                </form>
-              )}
-              {couponError && <p className="text-[11px] text-error font-medium">{couponError}</p>}
+              <CouponField />
 
               {/* Price Breakdown */}
               <div className="space-y-1.5 text-xs text-muted pt-1">

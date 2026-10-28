@@ -43,3 +43,28 @@ async def save_product(db, product_id: str, product: dict):
 async def delete_product(db, product_id: str) -> bool:
     result = await db[PRODUCT_COLLECTION].delete_one({"id": product_id})
     return result.deleted_count > 0
+
+
+# Stock is a plain number on the product. Products without a number (older ones) are not tracked and are
+# never touched by these; each update below is a single atomic MongoDB operation.
+_TRACKED = {"$type": "number"}
+
+
+async def reserve_stock(db, product_id: str, units: int) -> bool:
+    """Takes `units` off the stock only if there are enough; False when there are not (or the product is untracked)."""
+    result = await db[PRODUCT_COLLECTION].update_one(
+        {"id": product_id, "stock": {**_TRACKED, "$gte": units}}, {"$inc": {"stock": -units}}
+    )
+    return result.modified_count == 1
+
+
+async def release_stock(db, product_id: str, units: int):
+    await db[PRODUCT_COLLECTION].update_one({"id": product_id, "stock": _TRACKED}, {"$inc": {"stock": units}})
+
+
+async def take_stock_floor(db, product_id: str, units: int):
+    """Takes `units` off the stock but never below 0."""
+    await db[PRODUCT_COLLECTION].update_one(
+        {"id": product_id, "stock": _TRACKED},
+        [{"$set": {"stock": {"$max": [0, {"$subtract": ["$stock", units]}]}}}],
+    )

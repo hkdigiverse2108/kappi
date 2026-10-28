@@ -14,7 +14,8 @@ const handleResponse = async (res) => {
 
 export const fetchPaymentSettings = () => fetch(PAYMENT_SETTINGS_URL).then(handleResponse);
 
-// { codEnabled, razorpayEnabled } - at least one must be on
+// { codEnabled, razorpayEnabled, codCharge, prepaidDiscount } - at least one option must be on;
+// codCharge / prepaidDiscount are { enabled, type: 'percent' | 'amount', value }
 export const savePaymentSettings = (settings) =>
   fetch(PAYMENT_SETTINGS_URL, {
     method: 'PUT',

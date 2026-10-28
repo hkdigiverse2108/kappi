@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -26,6 +26,9 @@ import { useAdminStore } from '../store/adminStore';
 import { useCartStore } from '../../store/useCartStore';
 import { activeRewards } from '../../data/offers';
 import { StatusBadge } from '../components/common/StatusBadge';
+import { CustomSelect } from '../components/common/CustomSelect';
+import { DateRangePicker } from '../components/common/DateRangePicker';
+import { OrderCategoryTag } from '../components/common/OrderCategoriesModal';
 import { triggerKapeeCelebration } from '../components/common/Confetti';
 import { staggerContainer, staggerItem } from '../lib/motion';
 
@@ -93,15 +96,36 @@ export const DashboardPage = () => {
   const navigate = useNavigate();
   const cartOffers = useCartStore((s) => s.cartOffers);
   const {
-    orders,
+    orders: allOrders,
     products,
     reviews,
     updateReviewStatus,
     addToast,
     loadProducts,
     loadReviews,
-    loadOrders
+    loadOrders,
+    orderCategories,
+    loadOrderCategories
   } = useAdminStore();
+
+  // Order category filter ('All', 'none' = no category, or a category id): everything below
+  // (revenue, orders, charts, status, best sellers, recent orders) is worked out from these orders only
+  const [categoryFilter, setCategoryFilter] = useState('All');
+  useEffect(() => {
+    loadOrderCategories();
+  }, [loadOrderCategories]);
+  const categoryById = (id) => orderCategories.find((c) => c.id === id);
+  const orders = useMemo(() => {
+    if (categoryFilter === 'All') return allOrders;
+    if (categoryFilter === 'none') return allOrders.filter((o) => !orderCategories.some((c) => c.id === o.categoryId));
+    return allOrders.filter((o) => o.categoryId === categoryFilter);
+  }, [allOrders, orderCategories, categoryFilter]);
+  const categoryOptions = [
+    { value: 'All', label: 'All Categories' },
+    ...orderCategories.map((c) => ({ value: c.id, label: `${c.name} (${allOrders.filter((o) => o.categoryId === c.id).length})` })),
+    { value: 'none', label: `No Category (${allOrders.filter((o) => !categoryById(o.categoryId)).length})` }
+  ];
+  const categoryName = categoryFilter === 'All' ? '' : categoryFilter === 'none' ? 'No Category' : categoryById(categoryFilter)?.name || '';
   const [timeRange, setTimeRange] = useState('30d');
   const [startDate, setStartDate] = useState(() => toDateInput(addDays(new Date(), -29)));
   const [endDate, setEndDate] = useState(() => toDateInput(new Date()));
@@ -306,11 +330,21 @@ export const DashboardPage = () => {
             </div>
             <p className="text-xs sm:text-sm text-muted mt-1">
               Real-time performance metrics, orders pipeline and reviews for KAPEE Enterprise.
+              {categoryName && (
+                <span className="ml-1.5 font-semibold text-emerald-deep dark:text-emerald-400">Showing only: {categoryName}</span>
+              )}
             </p>
           </div>
 
           {/* Date Filter & Actions */}
-          <div className="relative flex items-center gap-2">
+          <div className="relative flex items-center gap-2 flex-wrap">
+            <div className="w-44 shrink-0">
+              <CustomSelect
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                options={categoryOptions}
+              />
+            </div>
             <div className="bg-surface border border-border p-1 rounded-xl flex items-center shadow-xs">
               {['Today', '7d', '30d'].map((tab) => (
                 <button
@@ -403,26 +437,17 @@ export const DashboardPage = () => {
                     </div>
                   </div>
 
-                  {/* Date Input Pickers */}
-                  <div className="grid grid-cols-2 gap-3 pt-1">
-                    <div className="space-y-1">
-                      <label className="text-[11px] font-semibold text-text-2">From Date</label>
-                      <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="input-kui w-full text-xs py-1.5 px-2.5"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[11px] font-semibold text-text-2">To Date</label>
-                      <input
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="input-kui w-full text-xs py-1.5 px-2.5"
-                      />
-                    </div>
+                  {/* Calendar: pick a start and an end date (the same day twice = one day) */}
+                  <div className="space-y-1 pt-1">
+                    <label className="text-[11px] font-semibold text-text-2">Custom Dates</label>
+                    <DateRangePicker
+                      from={startDate}
+                      to={endDate}
+                      onChange={(from, to) => {
+                        setStartDate(from);
+                        setEndDate(to);
+                      }}
+                    />
                   </div>
 
                   {/* Modal Action Buttons */}
@@ -796,7 +821,7 @@ export const DashboardPage = () => {
 
           <div className="divide-y divide-stone-100 dark:divide-stone-800/80">
             {recentOrders.length === 0 && (
-              <p className="text-xs text-muted text-center py-8">No orders yet.</p>
+              <p className="text-xs text-muted text-center py-8">{categoryName ? `No orders in ${categoryName}.` : 'No orders yet.'}</p>
             )}
             {recentOrders.map((order) => (
               <div
@@ -816,6 +841,11 @@ export const DashboardPage = () => {
                       {order.orderNumber}
                       {order.items?.[0]?.variant ? ` • ${order.items[0].variant}` : ''}
                     </p>
+                    {categoryFilter === 'All' && categoryById(order.categoryId) && (
+                      <div className="mt-1">
+                        <OrderCategoryTag category={categoryById(order.categoryId)} />
+                      </div>
+                    )}
                   </div>
                 </div>
 

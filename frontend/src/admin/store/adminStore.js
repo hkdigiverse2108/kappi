@@ -16,6 +16,7 @@ import * as footerApi from '../../api/footerApi';
 import * as announcementApi from '../../api/announcementApi';
 import * as paymentSettingsApi from '../../api/paymentSettingsApi';
 import * as orderApi from '../../api/orderApi';
+import * as orderCategoryApi from '../../api/orderCategoryApi';
 import { productBadgeList } from '../lib/productBadges';
 
 // Seed Admin Users
@@ -359,6 +360,7 @@ export const useAdminStore = create(
       syncProduct: (request, title) => {
         request
           .then(() => {
+            get().loadProducts();
             get().loadHomeContent();
             // The website catalogue shows the change without a page reload
             useProductStore.getState().loadProducts();
@@ -379,7 +381,8 @@ export const useAdminStore = create(
           // rating / reviewCount come from the approved reviews (worked out by the backend)
           rating: 0,
           reviewCount: 0,
-          stock: Number(prod.stock) || 50,
+          // Units in stock; 0 = Out of Stock on the website, blank = not tracked
+          stock: prod.stock === '' || prod.stock == null ? null : Math.max(0, Math.floor(Number(prod.stock)) || 0),
           basePrice: Number(prod.basePrice) || 199,
           baseMrp: Number(prod.baseMrp) || 399,
           images: prod.images?.length ? prod.images : ['/products/magic_eraser.jpg']
@@ -389,11 +392,19 @@ export const useAdminStore = create(
         get().logActivity('Products', `Created new product "${newProduct.title}"`);
       },
       updateProduct: (id, updates) => {
+        // stockLoaded (the stock the admin saw) only goes to the backend, so it can tell whether the admin changed the
+        // stock on purpose; it is not kept on the product
+        const { stockLoaded, ...fields } = updates;
+        if ('stock' in fields) {
+          fields.stock = fields.stock === '' || fields.stock == null ? null : Math.max(0, Math.floor(Number(fields.stock)) || 0);
+        }
         set((state) => ({
-          products: state.products.map((p) => (p.id === id ? withBadges({ ...p, ...updates }) : p))
+          products: state.products.map((p) => (p.id === id ? withBadges({ ...p, ...fields }) : p))
         }));
         const product = get().products.find((p) => p.id === id);
-        if (product) get().syncProduct(productApi.saveProduct(product), product.title);
+        if (product) {
+          get().syncProduct(productApi.saveProduct(stockLoaded === undefined ? product : { ...product, stockLoaded }), product.title);
+        }
         get().logActivity('Products', `Updated product details for ID: ${id}`);
       },
       deleteProduct: (id) => {
@@ -444,6 +455,7 @@ export const useAdminStore = create(
         const arrived = latest.filter((o) => !known.has(o.id));
         set({ orders: latest });
         if (!arrived.length) return;
+        get().loadProducts();
         playOrderChime();
         arrived.slice(0, 3).forEach((o) =>
           get().addToast({
@@ -510,6 +522,40 @@ export const useAdminStore = create(
           get().addToast({ type: 'error', title: 'Delete Failed', message: `Could not delete the order: ${err.message}` });
           return false;
         }
+      },
+
+      // Order categories (Manual Order, WhatsApp, Wholesale, ...) - backend /api/order-categories.
+      // The add / save / delete actions return the result and throw on failure, so the popup can show the error.
+      orderCategories: [],
+      loadOrderCategories: async () => {
+        try {
+          set({ orderCategories: await orderCategoryApi.fetchOrderCategories() });
+        } catch (err) {
+          console.error('Failed to load order categories:', err);
+        }
+      },
+      addOrderCategory: async (category) => {
+        const saved = await orderCategoryApi.createOrderCategory(category);
+        set((state) => ({ orderCategories: [...state.orderCategories, saved] }));
+        get().logActivity('Orders', `Added order category "${saved.name}"`);
+        return saved;
+      },
+      saveOrderCategory: async (id, category) => {
+        const saved = await orderCategoryApi.updateOrderCategory(id, category);
+        set((state) => ({ orderCategories: state.orderCategories.map((c) => (c.id === id ? saved : c)) }));
+        get().logActivity('Orders', `Updated order category "${saved.name}"`);
+        return saved;
+      },
+      deleteOrderCategory: async (id) => {
+        const category = get().orderCategories.find((c) => c.id === id);
+        if (category?.isDefault) throw new Error('The default category cannot be deleted. You can rename it instead.');
+        await orderCategoryApi.deleteOrderCategory(id);
+        set((state) => ({
+          orderCategories: state.orderCategories.filter((c) => c.id !== id),
+          // Orders of a deleted category have no category any more (the backend cleared them too)
+          orders: state.orders.map((o) => (o.categoryId === id ? { ...o, categoryId: null } : o))
+        }));
+        get().logActivity('Orders', `Deleted order category "${category?.name || id}"`);
       },
 
       // Customers CRUD - the accounts registered on the website (backend /api/admin/customers)
@@ -1141,6 +1187,19 @@ export const useAdminStore = create(
         announcementSaveQueue = request.catch(() => {});
         return request.catch((err) => {
           get().addToast({ type: 'error', title: 'Save Failed', message: `Could not save announcement bar: ${err.message}` });
+          get().loadAnnouncementBar();
+          throw err;
+        });
+      },
+
+      // The WhatsApp popup (image, delay, message) is saved in the same document as the ticker messages
+      saveAnnouncementPopup: (popup) => {
+        set((state) => ({ announcementBar: { messages: [], ...(state.announcementBar || {}), popup } }));
+        get().logActivity('CMS', 'Updated the website WhatsApp popup');
+        const request = announcementSaveQueue.then(() => announcementApi.saveAnnouncementBar(get().announcementBar));
+        announcementSaveQueue = request.catch(() => {});
+        return request.catch((err) => {
+          get().addToast({ type: 'error', title: 'Save Failed', message: `Could not save the popup: ${err.message}` });
           get().loadAnnouncementBar();
           throw err;
         });

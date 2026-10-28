@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowUp } from 'lucide-react';
 import { WhatsAppIcon } from './WhatsAppIcon';
-import { useContactChannels, whatsappLink } from '../../hooks/useContactChannels';
+import { useContactChannels, whatsappLink, WHATSAPP_DEFAULT_MESSAGE } from '../../hooks/useContactChannels';
 
 export const FloatingActions = () => {
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -24,10 +24,7 @@ export const FloatingActions = () => {
   };
 
   // Number from the WhatsApp card in Admin > CMS: Contact Us Page; no card = no button
-  const whatsappUrl = whatsappLink(
-    whatsapp?.primaryText,
-    'Hi KAPEE Team, I would like to know more about your Magic Erasers and cleaning essentials!'
-  );
+  const whatsappUrl = whatsappLink(whatsapp?.primaryText, WHATSAPP_DEFAULT_MESSAGE);
 
   return (
     <div className="fixed bottom-20 lg:bottom-6 right-4 sm:right-6 z-30 flex flex-col items-center gap-3">

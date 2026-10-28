@@ -10,7 +10,7 @@ export const StatusBadge = ({ status, size = 'sm' }) => {
     const s = (status || '').toLowerCase().trim();
 
     // 1. Pending (Amber #D98E04)
-    if (s === 'pending' || s === 'in review' || s === 'awaiting') {
+    if (s === 'pending' || s === 'in review' || s === 'awaiting' || s === 'abandoned') {
       return {
         bg: 'bg-[#FDF1D6] dark:bg-[#D98E04]/20 text-[#D98E04] dark:text-[#FBBF24] border-[#F3D58E] dark:border-[#D98E04]/35',
         dot: 'bg-[#D98E04]',
@@ -58,7 +58,7 @@ export const StatusBadge = ({ status, size = 'sm' }) => {
     }
 
     // 7. Cancelled / Spam (Slate #6B7280)
-    if (s === 'cancelled' || s === 'spam' || s === 'closed' || s === 'archived') {
+    if (s === 'cancelled' || s === 'spam' || s === 'closed' || s === 'archived' || s === 'empty') {
       return {
         bg: 'bg-[#F3F4F6] dark:bg-[#6B7280]/20 text-[#6B7280] dark:text-[#9CA3AF] border-[#E5E7EB] dark:border-[#6B7280]/35',
         dot: 'bg-[#6B7280]',

@@ -28,6 +28,7 @@ export const Cart = () => {
   const {
     items,
     updateQuantity,
+    getMaxQuantity,
     removeItem,
     getSubtotal,
     getMrpTotal,
@@ -173,7 +174,9 @@ export const Cart = () => {
                       <span className="px-3 text-xs font-bold text-ink">{item.quantity}</span>
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="px-2.5 py-1 text-muted hover:text-ink hover:bg-emerald-soft"
+                        disabled={item.quantity >= getMaxQuantity(item)}
+                        title={item.quantity >= getMaxQuantity(item) ? `Only ${getMaxQuantity(item)} in stock` : undefined}
+                        className="px-2.5 py-1 text-muted hover:text-ink hover:bg-emerald-soft disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         <Plus className="w-3.5 h-3.5" />
                       </button>

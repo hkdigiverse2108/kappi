@@ -27,6 +27,7 @@ import { ProductCard } from '../components/product/ProductCard';
 import { BeforeAfterSlider } from '../components/home/BeforeAfterSlider';
 import { AutoScrollReviews } from '../components/home/AutoScrollReviews';
 import { HousePromiseCard } from '../components/home/HousePromiseCard';
+import { HeroCarousel, getHeroSlides } from '../components/home/HeroCarousel';
 import { FadeIn, ScaleIn, StaggerContainer, StaggerItem } from '../components/common/MotionWrapper';
 import { useAdminStore } from '../admin/store/adminStore';
 
@@ -69,7 +70,8 @@ export const Home = () => {
     homeFeaturedReviews
   } = useAdminStore();
 
-  const activeTrustPillars = (trustPillars || []).filter((p) => p.active !== false);
+  const activeHeroSlides = getHeroSlides(heroBanner).filter((s) => s.active !== false && s.image);
+  const activeTrustPillars =(trustPillars || []).filter((p) => p.active !== false);
   const activeHowItWorksSteps = (howItWorksSteps || []).filter((s) => s.active !== false);
   const activeComparisonRows = (comparisonTable?.rows || []).filter((r) => r.active !== false);
   const activeUgcImages = (ugcSection?.images || []).filter((img) => img.active !== false);
@@ -113,27 +115,14 @@ export const Home = () => {
       {seo?.h1 && <h1 className="sr-only">{seo.h1}</h1>}
 
       {/* ========================================================
-          1. FULL SCREEN HERO BANNER SECTION (Single Banner & Action Strip)
+          1. FULL SCREEN HERO BANNER SECTION (Banner Slides & Action Strip)
          ======================================================== */}
       {isSectionVisible('hero') && heroBanner && (
         <section className="relative w-full bg-[#EBF3EF] border-b border-emerald-soft/70 overflow-hidden">
           {/* Full Screen Banner Container taking 100% of visible viewport below header */}
-          <div className="relative w-full group overflow-hidden">
-            <Link
-              to={heroBanner.bannerLink || '/'}
-              className="block relative w-full h-full overflow-hidden cursor-pointer"
-              aria-label={heroBanner.altText}
-            >
-              <img
-                src={heroBanner.image}
-                alt={heroBanner.altText}
-                className="w-full h-auto max-h-[calc(100vh-106px)] block object-cover object-center transition-transform duration-700 group-hover:scale-[1.01]"
-                fetchPriority="high"
-              />
-              {/* Subtle sheen highlight on hover */}
-              <div className="absolute inset-0 bg-emerald-950/0 group-hover:bg-emerald-950/[0.015] transition-colors" />
-            </Link>
-          </div>
+          {activeHeroSlides.length > 0 && (
+            <HeroCarousel slides={activeHeroSlides} interval={heroBanner.slideInterval} />
+          )}
 
           {/* Hero Bottom Interactive Action & Trust Strip */}
           {heroBanner.showActionStrip !== false && (

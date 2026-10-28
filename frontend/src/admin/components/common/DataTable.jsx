@@ -12,10 +12,12 @@ import {
   MoreHorizontal,
   ChevronLeft,
   ChevronRight,
-  Leaf
+  Leaf,
+  Loader2
 } from 'lucide-react';
 import { bulkBarVariants, staggerContainer, rowVariants } from '../../lib/motion';
 import { downloadCSV } from '../../lib/csv';
+import { useAdminStore } from '../../store/adminStore';
 
 export const DataTable = ({
   columns,
@@ -35,6 +37,8 @@ export const DataTable = ({
   const [selectedIds, setSelectedIds] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
+  const [exporting, setExporting] = useState(false);
+  const addToast = useAdminStore((state) => state.addToast);
   const pageSize = 10;
 
   // Filter & Search
@@ -118,7 +122,7 @@ export const DataTable = ({
   // Exports every row matching the current search/filters (not just the visible page).
   // Pages pass exportColumns for readable values; otherwise plain accessor values are used.
   const exportCSV = () => {
-    if (!filteredData.length) return;
+    if (!filteredData.length || exporting) return;
     const csvColumns =
       exportColumns ||
       columns
@@ -130,7 +134,20 @@ export const DataTable = ({
             return val !== null && typeof val === 'object' && !Array.isArray(val) ? '' : val;
           }
         }));
-    downloadCSV(exportFileName, csvColumns, filteredData);
+    // Shows "Preparing..." on the button and a toast, so the click is visibly answered while the browser starts the download
+    setExporting(true);
+    try {
+      downloadCSV(exportFileName, csvColumns, filteredData);
+      addToast({
+        type: 'success',
+        title: 'CSV Downloading',
+        message: `${filteredData.length} record(s) exported. Check your downloads folder.`
+      });
+    } catch (err) {
+      addToast({ type: 'error', title: 'Export Failed', message: err.message || 'Could not create the CSV file.' });
+    } finally {
+      setTimeout(() => setExporting(false), 1200);
+    }
   };
 
   return (
@@ -180,12 +197,12 @@ export const DataTable = ({
           <button
             type="button"
             onClick={exportCSV}
-            disabled={!filteredData.length}
+            disabled={!filteredData.length || exporting}
             title={filteredData.length ? `Export ${filteredData.length} record(s) to CSV` : 'No records to export'}
             className="shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3.5 py-2 bg-stone-50 hover:bg-stone-100 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 border border-stone-200 dark:border-stone-700 rounded-xl text-xs font-semibold transition-all"
           >
-            <Download className="w-3.5 h-3.5" />
-            Export CSV
+            {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+            {exporting ? 'Preparing...' : 'Export CSV'}
           </button>
         </div>
       </div>

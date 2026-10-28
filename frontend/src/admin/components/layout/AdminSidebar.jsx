@@ -4,6 +4,7 @@ import logoImg from '../../../assets/logo.png';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
+  Activity,
   ShoppingBag,
   Package,
   Users,
@@ -30,7 +31,7 @@ import {
   Layers,
   Flag,
   Palette,
-  Gift,
+  ShoppingCart,
   MessageSquareText,
   PanelBottom,
   Search
@@ -58,7 +59,8 @@ export const AdminSidebar = ({ mobileOpen = false, onMobileClose }) => {
     { label: 'Reviews', path: '/admin/reviews', icon: Star, badge: pendingReviewsCount > 0 ? pendingReviewsCount : null, badgeColor: 'bg-[#1E8E5A] text-white' },
     { label: 'FAQ', path: '/admin/faqs', icon: HelpCircle },
     { label: 'Coupons', path: '/admin/offers', icon: Tag },
-    { label: 'Cart Rewards', path: '/admin/cart-rewards', icon: Gift },
+    { label: 'Cart Rewards', path: '/admin/cart-rewards', icon: ShoppingCart },
+    { label: 'Cart Tracking', path: '/admin/cart-tracking', icon: Activity },
     { label: 'Delivery & Payments', path: '/admin/delivery-payments', icon: Truck },
   ];
 

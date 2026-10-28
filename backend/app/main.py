@@ -16,6 +16,9 @@ from app.models.password_reset import setup_password_reset_indexes
 from app.models.contact import setup_enquiry_indexes
 from app.models.newsletter import setup_subscriber_indexes
 from app.models.order import setup_order_indexes
+from app.models.order_category import setup_order_category_indexes
+from app.models.cart_tracking import setup_cart_tracking_indexes
+from app.services.order_category import ensure_default_order_category
 from app.services.admin_auth import ensure_first_admin
 from app.services.contact import ensure_contact_content
 from app.services.our_story import ensure_our_story_content
@@ -43,7 +46,9 @@ from app.controllers.payment_settings import router as payment_settings_router
 from app.controllers.faq import router as faq_router
 from app.controllers.policy import router as policy_router
 from app.controllers.order import router as order_router
+from app.controllers.order_category import router as order_category_router
 from app.controllers.cart_offers import router as cart_offers_router
+from app.controllers.cart_tracking import router as cart_tracking_router
 from app.controllers.seo import router as seo_router
 
 logging.basicConfig(level=logging.INFO)
@@ -62,6 +67,9 @@ async def lifespan(app: FastAPI):
     await setup_enquiry_indexes(db.db)
     await setup_subscriber_indexes(db.db)
     await setup_order_indexes(db.db)
+    await setup_order_category_indexes(db.db)
+    await setup_cart_tracking_indexes(db.db)
+    await ensure_default_order_category(db.db)
     await ensure_first_admin(db.db)
     await ensure_contact_content(db.db)
     await ensure_our_story_content(db.db)
@@ -111,7 +119,9 @@ app.include_router(payment_settings_router)
 app.include_router(faq_router)
 app.include_router(policy_router)
 app.include_router(order_router)
+app.include_router(order_category_router)
 app.include_router(cart_offers_router)
+app.include_router(cart_tracking_router)
 app.include_router(seo_router)
 
 # Images uploaded from the admin panel

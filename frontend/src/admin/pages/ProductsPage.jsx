@@ -209,7 +209,9 @@ export const ProductsPage = () => {
         badges: productBadgeList(product),
         basePrice: product.basePrice,
         baseMrp: product.baseMrp,
-        stock: product.stock,
+        stock: product.stock ?? '',
+        // The stock as loaded: the backend keeps the live stock (orders lower it) unless this number is changed
+        stockLoaded: product.stock ?? null,
         status: product.status || 'Active',
         // Editing shows exactly what is saved for this product (no template content filled in)
         category: product.category || '',
@@ -726,6 +728,25 @@ export const ProductsPage = () => {
       )
     },
     {
+      header: 'Stock',
+      className: 'whitespace-nowrap',
+      accessor: 'stock',
+      cell: (row) =>
+        typeof row.stock !== 'number' ? (
+          <span className="text-[11px] text-stone-400">Not tracked</span>
+        ) : row.stock === 0 ? (
+          <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-red-50 text-red-700 border border-red-200">Out of Stock</span>
+        ) : (
+          <span
+            className={`px-2 py-0.5 rounded-full text-[11px] font-bold border ${
+              row.stock <= 8 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+            }`}
+          >
+            {row.stock} in stock
+          </span>
+        )
+    },
+    {
       header: 'Rating',
       accessor: 'rating',
       cell: (row) => (
@@ -785,6 +806,7 @@ export const ProductsPage = () => {
     { header: 'Badge', value: (p) => p.badge },
     { header: 'Price', value: (p) => p.basePrice },
     { header: 'MRP', value: (p) => p.baseMrp },
+    { header: 'Stock', value: (p) => (typeof p.stock === 'number' ? p.stock : '') },
     {
       header: 'Discount %',
       value: (p) => (p.baseMrp ? Math.round(((p.baseMrp - p.basePrice) / p.baseMrp) * 100) : '')
@@ -1205,6 +1227,46 @@ export const ProductsPage = () => {
                   className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border rounded-xl"
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Section: Stock */}
+          <div className="space-y-3">
+            <h4 className="font-serif font-bold text-sm text-ink dark:text-stone-100 border-b pb-1">
+              Stock
+            </h4>
+            <div className="space-y-1">
+              <label className="font-semibold text-stone-700 dark:text-stone-300">Quantity in Stock (pieces)</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={productForm.stock ?? ''}
+                  onChange={(e) =>
+                    setProductForm({ ...productForm, stock: e.target.value === '' ? '' : Math.max(0, Math.floor(Number(e.target.value))) })
+                  }
+                  placeholder="e.g. 50"
+                  className="w-40 px-3 py-2 bg-stone-50 dark:bg-stone-800 border rounded-xl"
+                />
+                {productForm.stock !== '' && productForm.stock != null && (
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${
+                      Number(productForm.stock) === 0
+                        ? 'bg-red-50 text-red-700 border-red-200'
+                        : Number(productForm.stock) <= 8
+                          ? 'bg-amber-50 text-amber-700 border-amber-200'
+                          : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    }`}
+                  >
+                    {Number(productForm.stock) === 0 ? 'Out of Stock' : Number(productForm.stock) <= 8 ? 'Low Stock' : 'In Stock'}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-stone-400">
+                At 0 the website shows Out of Stock. Each order lowers it automatically (a pack uses its "pieces", e.g. Pack of 3 = 3), and
+                cancelled orders give it back. Leave blank to not track stock for this product.
+              </p>
             </div>
           </div>
 

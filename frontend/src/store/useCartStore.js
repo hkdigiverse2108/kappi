@@ -4,6 +4,9 @@ import { fetchActiveCoupons } from '../api/couponApi';
 import { fetchCartOffers } from '../api/cartOffersApi';
 import { couponType, couponMinOrder, couponProductIds } from '../utils/coupons';
 import { triggerCelebration } from '../utils/confetti';
+import { useProductStore } from './useProductStore';
+import { maxPacks } from '../utils/stock';
+import { trackCartEvent } from '../api/cartTrackingApi';
 
 export const useCartStore = create(
   persist(
@@ -132,6 +135,12 @@ export const useCartStore = create(
 
         const existingIndex = isBundle ? -1 : items.findIndex((i) => i.id === itemId);
 
+        // Never put more in the cart than the stock (Admin > Products > Quantity in Stock); sold out = nothing is added
+        const available = isBundle ? Infinity : maxPacks(product, variant);
+        const inCart = existingIndex > -1 ? items[existingIndex].quantity : 0;
+        quantity = Math.min(quantity, available - inCart);
+        if (quantity <= 0) return false;
+
         const price = isBundle ? product.comboPrice || product.price : (variant ? variant.price : product.basePrice || product.price);
         const mrp = isBundle ? product.originalPrice || product.mrp : (variant ? variant.mrp : product.baseMrp || product.mrp);
         const variantName = isBundle ? (product.subtitle || 'Bundle Set') : (variant ? variant.name : 'Standard');
@@ -159,6 +168,8 @@ export const useCartStore = create(
 
         set({ items, isCartOpen: true });
         get().triggerCartBump();
+        // Admin > Cart Tracking: every cart change is logged as its own row
+        trackCartEvent('add', { ...(existingIndex > -1 ? items[existingIndex] : items[items.length - 1]), quantity }, items);
 
         // Calculate subtotal of non-gift items
         const subtotal = items
@@ -166,10 +177,21 @@ export const useCartStore = create(
           .reduce((sum, item) => sum + item.price * item.quantity, 0);
 
         get().checkThresholdMilestones(subtotal);
+        return true;
+      },
+
+      // How many of this cart line can be bought (Infinity = no limit); uses the product stock the website loaded
+      getMaxQuantity: (item) => {
+        if (item.isBundle || item.isFreeGift) return Infinity;
+        const product = useProductStore.getState().products.find((p) => p.id === item.productId);
+        const variant = product?.variants?.find((v) => v.id === item.variantId);
+        return product ? maxPacks(product, variant) : Infinity;
       },
 
       updateQuantity: (itemId, newQuantity) => {
         let items = [...get().items];
+        const line = items.find((i) => i.id === itemId);
+        if (line) newQuantity = Math.min(newQuantity, get().getMaxQuantity(line));
         if (newQuantity <= 0) {
           items = items.filter((i) => i.id !== itemId);
         } else {
@@ -179,6 +201,10 @@ export const useCartStore = create(
         }
 
         set({ items });
+        if (line && !line.isFreeGift) {
+          const changed = items.find((i) => i.id === itemId);
+          trackCartEvent(changed ? 'update' : 'remove', changed || line, items);
+        }
         const subtotal = items
           .filter((i) => !i.isFreeGift)
           .reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -187,8 +213,10 @@ export const useCartStore = create(
       },
 
       removeItem: (itemId) => {
+        const line = get().items.find((i) => i.id === itemId);
         const items = get().items.filter((i) => i.id !== itemId);
         set({ items });
+        if (line && !line.isFreeGift) trackCartEvent('remove', line, items);
 
         const subtotal = items
           .filter((i) => !i.isFreeGift)
@@ -236,6 +264,7 @@ export const useCartStore = create(
       setOrderNote: (note) => set({ orderNote: note }),
 
       clearCart: () => {
+        if (get().items.length) trackCartEvent('clear', null, []);
         set({
           items: [],
           coupon: null,
@@ -322,6 +351,18 @@ export const useCartStore = create(
         const shipping = get().getShippingFee();
 
         return Math.max(0, subtotal - couponDisc - extraTierDisc + shipping);
+      },
+
+      // COD charge / prepaid discount for the chosen payment method - same rule as the backend order total
+      getPaymentAdjustments: (paymentSettings, method) => {
+        const amount = Math.max(0, get().getSubtotal() - get().getCouponDiscount() - get().getExtraTierDiscount());
+        const adjust = (rule) => {
+          if (!rule?.enabled || amount <= 0) return 0;
+          return Math.round(rule.type === 'percent' ? (amount * rule.value) / 100 : rule.value);
+        };
+        if (!paymentSettings || !method) return { codCharge: 0, prepaidDiscount: 0 };
+        if (method === 'cod') return { codCharge: adjust(paymentSettings.codCharge), prepaidDiscount: 0 };
+        return { codCharge: 0, prepaidDiscount: Math.min(amount, adjust(paymentSettings.prepaidDiscount)) };
       }
     }),
     {

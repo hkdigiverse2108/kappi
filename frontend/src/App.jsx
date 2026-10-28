@@ -8,6 +8,7 @@ import { MobileBottomBar } from './components/layout/MobileBottomBar';
 import { MobileMenuDrawer } from './components/layout/MobileMenuDrawer';
 import { CartDrawer } from './components/cart/CartDrawer';
 import { GlobalConfirmDialog } from './components/common/GlobalConfirmDialog';
+import { WhatsAppPopup } from './components/common/WhatsAppPopup';
 import { QuickViewModal } from './components/product/QuickViewModal';
 import { FloatingActions } from './components/common/FloatingActions';
 import { LeafLoader } from './components/common/LeafLoader';
@@ -81,6 +82,8 @@ const AppLayout = () => {
       <QuickViewModal />
       <MobileMenuDrawer />
       <GlobalConfirmDialog />
+      {/* Image popup after a while that opens WhatsApp (Admin > CMS: Banners & Bar) */}
+      {!isCheckout && <WhatsAppPopup />}
 
       {/* Floating Buttons: WhatsApp & Back to Top */}
       {!isCheckout && <FloatingActions />}

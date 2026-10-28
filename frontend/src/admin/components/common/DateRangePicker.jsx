@@ -13,11 +13,13 @@ const formatKey = (key) =>
 
 /**
  * One calendar for picking a single day or a range.
- * First click = start date, second click = end date (click the same day twice for one day).
+ * First click selects that day at once, a second click on another day makes it a range.
  * Calls onChange(from, to) with 'YYYY-MM-DD' strings.
+ * size 'toolbar' = same height as the Export CSV button.
  */
-export const DateRangePicker = ({ from, to, onChange, placeholder = 'Select dates' }) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const DateRangePicker = ({ from, to, onChange, placeholder = 'Select dates', size = 'md', defaultOpen = false }) => {
+  // defaultOpen: the calendar is already open when it appears (right after "Custom Range" is chosen)
+  const [isOpen, setIsOpen] = useState(defaultOpen);
   const [month, setMonth] = useState(() => {
     const base = from ? new Date(`${from}T00:00:00`) : new Date();
     return new Date(base.getFullYear(), base.getMonth(), 1);
@@ -54,6 +56,8 @@ export const DateRangePicker = ({ from, to, onChange, placeholder = 'Select date
 
   const handleDayClick = (key) => {
     if (!pendingStart) {
+      // First click already selects that single day (the list updates at once); a second click turns it into a range
+      onChange(key, key);
       setPendingStart(key);
       return;
     }
@@ -73,7 +77,7 @@ export const DateRangePicker = ({ from, to, onChange, placeholder = 'Select date
       <button
         type="button"
         onClick={() => (isOpen ? close() : setIsOpen(true))}
-        className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-xs whitespace-nowrap transition-all bg-stone-50/80 dark:bg-stone-800/80 hover:bg-white dark:hover:bg-stone-800 ${
+        className={`flex items-center gap-2 px-3.5 ${size === 'toolbar' ? 'py-2' : 'py-2.5'} rounded-xl border text-xs whitespace-nowrap transition-all bg-stone-50/80 dark:bg-stone-800/80 hover:bg-white dark:hover:bg-stone-800 ${
           isOpen
             ? 'border-emerald-600 ring-2 ring-emerald-deep/15'
             : 'border-stone-200 dark:border-stone-700'
@@ -143,7 +147,7 @@ export const DateRangePicker = ({ from, to, onChange, placeholder = 'Select date
 
           <div className="flex items-center justify-between pt-2 mt-2 border-t border-stone-100 dark:border-stone-800">
             <span className="text-[10px] text-stone-400">
-              {pendingStart ? 'Now pick the end date' : 'Pick a date, or a start and end date'}
+              {pendingStart ? 'Click another date for a range' : 'Pick a date, or a start and end date'}
             </span>
             {from && (
               <button

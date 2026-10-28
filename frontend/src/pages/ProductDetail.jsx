@@ -54,6 +54,7 @@ import { useWishlistStore } from '../store/useWishlistStore';
 import { useUIStore } from '../store/useUIStore';
 import { fetchProductPage } from '../api/productApi';
 import { describeCoupon } from '../utils/coupons';
+import { isOutOfStock, isLowStock, isVariantAvailable, maxPacks, isStockTracked } from '../utils/stock';
 import { NotFound } from './NotFound';
 
 // Customer photo strip above the reviews: this many tiles, the last one shows "+N" when there are more
@@ -178,6 +179,20 @@ const ProductDetailView = ({ product, reviews, coupons, fbtCandidates, youMayAls
     ((selectedVariant.mrp - selectedVariant.price) / selectedVariant.mrp) * 100
   );
 
+  // Stock from Admin > Products > Quantity in Stock: 0 = Out of Stock; a pack bigger than the stock left is unavailable
+  const productSoldOut = isOutOfStock(product);
+  const variantSoldOut = productSoldOut || !isVariantAvailable(product, selectedVariant);
+  const maxQty = maxPacks(product, selectedVariant);
+
+  // Open on the first pack that can be bought, and never ask for more than is in stock
+  useEffect(() => {
+    const firstAvailable = product.variants?.findIndex((v) => isVariantAvailable(product, v)) ?? -1;
+    setSelectedVariantIndex(firstAvailable > 0 ? firstAvailable : 0);
+  }, [product]);
+  useEffect(() => {
+    setQuantity((q) => Math.max(1, Math.min(q, maxQty)));
+  }, [maxQty]);
+
   const handlePincodeCheck = (e) => {
     e.preventDefault();
     if (!pincode || pincode.length !== 6 || isNaN(pincode)) {
@@ -197,6 +212,7 @@ const ProductDetailView = ({ product, reviews, coupons, fbtCandidates, youMayAls
   };
 
   const handleAddToCart = () => {
+    if (variantSoldOut) return;
     addItem({
       product,
       variant: selectedVariant,
@@ -205,6 +221,7 @@ const ProductDetailView = ({ product, reviews, coupons, fbtCandidates, youMayAls
   };
 
   const handleBuyNow = () => {
+    if (variantSoldOut) return;
     addItem({
       product,
       variant: selectedVariant,
@@ -215,6 +232,7 @@ const ProductDetailView = ({ product, reviews, coupons, fbtCandidates, youMayAls
   };
 
   const handleAddFbt = () => {
+    if (variantSoldOut) return;
     addItem({ product, variant: selectedVariant, quantity: 1 });
     fbtCandidates.forEach((item, idx) => {
       if (fbtSelected[idx] && item.variants?.length) {
@@ -265,7 +283,7 @@ const ProductDetailView = ({ product, reviews, coupons, fbtCandidates, youMayAls
               "price": String(product.basePrice),
               "priceValidUntil": "2027-12-31",
               "itemCondition": "https://schema.org/NewCondition",
-              "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+              "availability": isOutOfStock(product) ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
               "seller": {
                 "@type": "Organization",
                 "name": "KAPEE Enterprise"
@@ -455,6 +473,30 @@ const ProductDetailView = ({ product, reviews, coupons, fbtCandidates, youMayAls
                 </span>
               </div>
               <p className="text-[11px] text-muted">Inclusive of all taxes • Free shipping on orders ₹499+</p>
+              {isStockTracked(product) && (
+                <p
+                  className={`inline-flex items-center gap-1.5 mt-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
+                    variantSoldOut
+                      ? 'bg-red-50 text-red-700 border-red-200'
+                      : isLowStock(product)
+                        ? 'bg-amber-50 text-amber-700 border-amber-200'
+                        : 'bg-emerald-soft/60 text-success border-success/30'
+                  }`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      variantSoldOut ? 'bg-red-500' : isLowStock(product) ? 'bg-amber-500' : 'bg-success'
+                    }`}
+                  />
+                  {variantSoldOut
+                    ? productSoldOut
+                      ? 'Out of Stock'
+                      : 'This pack is out of stock'
+                    : isLowStock(product)
+                      ? `Hurry! Only ${product.stock} left in stock`
+                      : 'In Stock'}
+                </p>
+              )}
             </div>
 
             {/* Pack Selector Pills with per-piece price */}
@@ -473,7 +515,10 @@ const ProductDetailView = ({ product, reviews, coupons, fbtCandidates, youMayAls
                     <button
                       key={v.id}
                       onClick={() => setSelectedVariantIndex(idx)}
+                      disabled={!isVariantAvailable(product, v) && product.variants.some((o) => isVariantAvailable(product, o))}
                       className={`p-2.5 sm:p-3 rounded-xl border text-left transition-all relative flex flex-col justify-start min-w-0 ${
+                        !isVariantAvailable(product, v) ? 'opacity-50 cursor-not-allowed ' : ''
+                      }${
                         selectedVariantIndex === idx
                           ? 'border-emerald bg-emerald-soft/50 shadow-xs ring-1 ring-emerald/30'
                           : 'border-emerald-soft bg-white hover:border-emerald/40'
@@ -491,8 +536,12 @@ const ProductDetailView = ({ product, reviews, coupons, fbtCandidates, youMayAls
                         <span className="text-sm sm:text-base font-black text-emerald-deep">₹{v.price}</span>
                         <span className="text-[10px] sm:text-[11px] text-muted/80 line-through">₹{v.mrp}</span>
                       </div>
-                      <span className="text-[10px] sm:text-[11px] text-muted mt-1 font-medium leading-tight whitespace-nowrap block">
-                        ₹{v.perPiece}/pc
+                      <span
+                        className={`text-[10px] sm:text-[11px] mt-1 font-medium leading-tight whitespace-nowrap block ${
+                          isVariantAvailable(product, v) ? 'text-muted' : 'text-red-600 font-bold'
+                        }`}
+                      >
+                        {isVariantAvailable(product, v) ? `₹${v.perPiece}/pc` : 'Out of stock'}
                       </span>
                     </button>
                   ))}
@@ -514,8 +563,9 @@ const ProductDetailView = ({ product, reviews, coupons, fbtCandidates, youMayAls
                   </button>
                   <span className="px-3 font-bold text-xs text-ink">{quantity}</span>
                   <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="p-3 text-muted hover:text-ink hover:bg-emerald-soft transition-colors"
+                    onClick={() => setQuantity(Math.min(maxQty, quantity + 1))}
+                    disabled={variantSoldOut || quantity >= maxQty}
+                    className="p-3 text-muted hover:text-ink hover:bg-emerald-soft transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     aria-label="Increase quantity"
                   >
                     <Plus className="w-4 h-4" />
@@ -525,9 +575,14 @@ const ProductDetailView = ({ product, reviews, coupons, fbtCandidates, youMayAls
                 {/* Add to Cart */}
                 <button
                   onClick={handleAddToCart}
-                  className="btn-primary flex-1 text-xs sm:text-sm font-bold py-3.5 tracking-wider uppercase"
+                  disabled={variantSoldOut}
+                  className={`flex-1 text-xs sm:text-sm font-bold py-3.5 tracking-wider uppercase ${
+                    variantSoldOut
+                      ? 'rounded-xl bg-stone-300 text-stone-700 border border-stone-400/60 disabled:!opacity-100 flex items-center justify-center gap-2'
+                      : 'btn-primary'
+                  }`}
                 >
-                  <ShoppingBag className="w-4 h-4" /> Add to Cart
+                  <ShoppingBag className="w-4 h-4" /> {variantSoldOut ? 'Out of Stock' : 'Add to Cart'}
                 </button>
 
                 {/* Wishlist toggle */}
@@ -545,12 +600,18 @@ const ProductDetailView = ({ product, reviews, coupons, fbtCandidates, youMayAls
               </div>
 
               {/* Buy Now Button (Gold Gradient) */}
-              <button
-                onClick={handleBuyNow}
-                className="btn-gold w-full text-xs sm:text-sm font-bold py-3.5 shadow-gold tracking-wider uppercase flex items-center justify-center gap-2"
-              >
-                <Zap className="w-4 h-4" /> Buy Now • Express Checkout
-              </button>
+              {variantSoldOut ? (
+                <p className="w-full text-center text-xs font-bold text-stone-500 bg-stone-100 border border-stone-200 rounded-xl py-3">
+                  Currently unavailable. Save it to your wishlist and check back soon.
+                </p>
+              ) : (
+                <button
+                  onClick={handleBuyNow}
+                  className="btn-gold w-full text-xs sm:text-sm font-bold py-3.5 shadow-gold tracking-wider uppercase flex items-center justify-center gap-2"
+                >
+                  <Zap className="w-4 h-4" /> Buy Now • Express Checkout
+                </button>
+              )}
             </div>
 
             {/* Offers Box (Bank, UPI, Coupons with ticket voucher design) */}
@@ -949,10 +1010,11 @@ const ProductDetailView = ({ product, reviews, coupons, fbtCandidates, youMayAls
                 <div className="space-y-1.5">
                   <button
                     onClick={handleAddFbt}
-                    className="btn-gold w-full font-bold py-2.5 px-4 text-sm flex items-center justify-center gap-2 rounded-xl shadow-sm hover:shadow transition-all"
+                    disabled={variantSoldOut}
+                    className="btn-gold w-full font-bold py-2.5 px-4 text-sm flex items-center justify-center gap-2 rounded-xl shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ShoppingBag className="w-4 h-4" />
-                    <span>Add Bundle to Cart</span>
+                    <span>{variantSoldOut ? 'Out of Stock' : 'Add Bundle to Cart'}</span>
                   </button>
                   <p className="text-[11px] text-muted text-center flex items-center justify-center gap-1">
                     <Truck className="w-3.5 h-3.5 text-emerald" /> Free delivery on this bundle

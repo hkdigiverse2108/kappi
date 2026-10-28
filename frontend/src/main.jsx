@@ -11,6 +11,14 @@ import { useProductStore } from './store/useProductStore'
 useAdminStore.getState().loadHomeContent()
 // Products from Admin > Products (shop, search, menu, cart suggestions...)
 useProductStore.getState().loadProducts()
+// Stock changes with every order and with the admin, so the catalogue is loaded again whenever the tab
+// is opened or focused again (at most every 10 seconds)
+let productsLoadedAt = Date.now()
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible' || Date.now() - productsLoadedAt < 10000) return
+  productsLoadedAt = Date.now()
+  useProductStore.getState().loadProducts()
+})
 // WhatsApp / phone / email from Admin > CMS: Contact Us Page (footer, floating WhatsApp button...)
 useAdminStore.getState().loadContactContent()
 // Policy pages from Admin > CMS: Policy Pages (footer links)

@@ -50,6 +50,12 @@ async def save_product(db, product_id: str, data: dict) -> dict:
     sort_order = existing["sortOrder"] if existing and "sortOrder" in existing else await product_repo.get_max_sort_order(db) + 1
     # rating / reviewCount are worked out from the reviews, never stored on the product
     data = {k: v for k, v in data.items() if k not in ("rating", "reviewCount")}
+    # The admin only sets the stock on purpose (a different number than the one they loaded); any other
+    # edit keeps the live stock, which orders may have lowered since
+    stock_loaded = data.pop("stockLoaded", None)
+    if existing and isinstance(existing.get("stock"), (int, float)):
+        if stock_loaded is None or data.get("stock") == stock_loaded:
+            data["stock"] = existing["stock"]
     product = {**data, "id": product_id, "sortOrder": sort_order}
     try:
         await product_repo.save_product(db, product_id, product)

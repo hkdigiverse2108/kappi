@@ -22,7 +22,8 @@ import {
   ExternalLink,
   ChevronRight,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Tags
 } from 'lucide-react';
 import { useAdminStore } from '../store/adminStore';
 import { istDateTime } from '../../utils/istTime';
@@ -36,6 +37,7 @@ import { CustomSelect } from '../components/common/CustomSelect';
 import { DateRangePicker } from '../components/common/DateRangePicker';
 import { confirmDelete } from '../../store/useConfirmStore';
 import { csvDate } from '../lib/csv';
+import { OrderCategoriesModal, OrderCategoryTag } from '../components/common/OrderCategoriesModal';
 
 // Small icon in the orders table that shows its details on hover.
 // The tooltip is drawn on <body> so the table's overflow can't cut it off.
@@ -73,8 +75,17 @@ const HoverTip = ({ icon: Icon, title, text }) => {
 const formatOrderTime = istDateTime;
 
 export const OrdersPage = () => {
-  const { orders, addOrder, updateOrderStatus, updateOrder, deleteOrder, addToast, products } = useAdminStore();
+  const { orders, addOrder, updateOrderStatus, updateOrder, deleteOrder, addToast, products, orderCategories, loadOrderCategories } =
+    useAdminStore();
   const [activeStatusFilter, setActiveStatusFilter] = useState('All');
+
+  // Order categories: filter ('All', 'none' or a category id) and the add / edit / delete popup
+  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+  useEffect(() => {
+    loadOrderCategories();
+  }, [loadOrderCategories]);
+  const categoryById = (id) => orderCategories.find((c) => c.id === id);
 
   // Selected order for Detail Drawer
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -90,6 +101,7 @@ export const OrdersPage = () => {
     state: '',
     pincode: '',
     paymentMethod: 'Cash on Delivery (COD)',
+    categoryId: '',
     items: []
   });
   const [isBooking, setIsBooking] = useState(false);
@@ -106,7 +118,8 @@ export const OrdersPage = () => {
       paymentStatus: order.payment?.status || 'Pending',
       courier: order.fulfillment?.courier || '',
       awb: order.fulfillment?.awb || '',
-      notes: order.notes || ''
+      notes: order.notes || '',
+      categoryId: order.categoryId || ''
     });
   };
 
@@ -143,6 +156,14 @@ export const OrdersPage = () => {
       label: `${st} (${orders.filter((o) => o.status === st).length})`
     }))
   ];
+
+  const categoryOptions = [
+    { value: 'All', label: 'All Categories' },
+    ...orderCategories.map((c) => ({ value: c.id, label: `${c.name} (${orders.filter((o) => o.categoryId === c.id).length})` })),
+    { value: 'none', label: `No Category (${orders.filter((o) => !categoryById(o.categoryId)).length})` }
+  ];
+  // Choices for a single order ("" = no category)
+  const categoryChoices = [{ value: '', label: 'No Category' }, ...orderCategories.map((c) => ({ value: c.id, label: c.name }))];
 
   // Date filter: preset ranges, or 'custom' with From / To dates
   const [dateFilter, setDateFilter] = useState('all');
@@ -182,16 +203,20 @@ export const OrdersPage = () => {
     const [from, to] = dateRange;
     return orders.filter((o) => {
       if (activeStatusFilter !== 'All' && o.status !== activeStatusFilter) return false;
+      if (categoryFilter === 'none' ? categoryById(o.categoryId) : categoryFilter !== 'All' && o.categoryId !== categoryFilter) {
+        return false;
+      }
       const placed = new Date(o.createdAt);
       if (from && placed < from) return false;
       if (to && placed >= to) return false;
       return true;
     });
-  }, [orders, activeStatusFilter, dateRange]);
+  }, [orders, orderCategories, activeStatusFilter, categoryFilter, dateRange]);
 
-  const hasFilters = activeStatusFilter !== 'All' || dateFilter !== 'all';
+  const hasFilters = activeStatusFilter !== 'All' || categoryFilter !== 'All' || dateFilter !== 'all';
   const clearFilters = () => {
     setActiveStatusFilter('All');
+    setCategoryFilter('All');
     setDateFilter('all');
     setDateFrom('');
     setDateTo('');
@@ -232,6 +257,8 @@ export const OrdersPage = () => {
       state: '',
       pincode: '',
       paymentMethod: 'Cash on Delivery (COD)',
+      // Picks the "Manual Order" category when there is one
+      categoryId: orderCategories.find((c) => c.name.toLowerCase() === 'manual order')?.id || '',
       items: firstProd ? [
         {
           id: `item-${Date.now()}`,
@@ -365,7 +392,8 @@ export const OrdersPage = () => {
           quantity,
           image: image || ''
         })),
-        paymentMethod: manualForm.paymentMethod
+        paymentMethod: manualForm.paymentMethod,
+        categoryId: manualForm.categoryId || null
       });
       setManualOrderOpen(false);
       triggerKapeeCelebration();
@@ -408,7 +436,8 @@ export const OrdersPage = () => {
       paymentStatus: orderEdit.paymentStatus,
       courier: orderEdit.courier,
       awb: orderEdit.awb,
-      notes: orderEdit.notes
+      notes: orderEdit.notes,
+      categoryId: orderEdit.categoryId
     });
     setIsSavingOrder(false);
     if (!saved) return;
@@ -428,6 +457,11 @@ export const OrdersPage = () => {
             {row.orderNumber}
           </span>
           <p className="text-[11px] text-stone-400">{formatOrderTime(row.createdAt)}</p>
+          {categoryById(row.categoryId) && (
+            <div className="mt-1">
+              <OrderCategoryTag category={categoryById(row.categoryId)} />
+            </div>
+          )}
         </div>
       )
     },
@@ -503,11 +537,18 @@ export const OrdersPage = () => {
     }
   ];
 
+  // CSV file name follows the category filter, e.g. kapee-orders-website-2026-10-28.csv
+  const exportCategoryName = categoryFilter === 'none' ? 'no-category' : categoryFilter !== 'All' ? categoryById(categoryFilter)?.name : '';
+  const exportFileName = ['kapee-orders', exportCategoryName?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')]
+    .filter(Boolean)
+    .join('-');
+
   const orderExportColumns = [
     { header: 'Order Number', value: (o) => o.orderNumber },
     { header: 'Order Date', value: (o) => csvDate(o.createdAt) },
     { header: 'Status', value: (o) => o.status },
     { header: 'Source', value: (o) => o.source },
+    { header: 'Category', value: (o) => categoryById(o.categoryId)?.name },
     { header: 'Customer Name', value: (o) => o.customer?.name },
     { header: 'Email', value: (o) => o.customer?.email },
     { header: 'Phone', value: (o) => o.customer?.phone },
@@ -524,7 +565,9 @@ export const OrdersPage = () => {
     { header: 'Coupon Code', value: (o) => o.pricing?.couponCode },
     { header: 'Coupon Discount', value: (o) => o.pricing?.couponDiscount },
     { header: 'Tier Discount', value: (o) => o.pricing?.tierDiscount },
+    { header: 'Prepaid Discount', value: (o) => o.pricing?.prepaidDiscount },
     { header: 'Shipping Fee', value: (o) => o.pricing?.shippingFee },
+    { header: 'COD Charge', value: (o) => o.pricing?.codCharge },
     { header: 'Tax', value: (o) => o.pricing?.tax },
     { header: 'Total', value: (o) => o.pricing?.total },
     { header: 'Payment Method', value: (o) => o.payment?.method },
@@ -547,6 +590,14 @@ export const OrdersPage = () => {
         <div className="flex items-center gap-2.5">
           <button
             type="button"
+            onClick={() => setCategoriesOpen(true)}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-200 hover:border-emerald-500 hover:text-emerald-deep shadow-sm transition-all active:scale-95"
+          >
+            <Tags className="w-4 h-4" />
+            <span>Categories</span>
+          </button>
+          <button
+            type="button"
             onClick={handleOpenManualOrder}
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-deep hover:bg-emerald-800 text-white shadow-sm transition-all active:scale-95"
           >
@@ -559,7 +610,7 @@ export const OrdersPage = () => {
       {/* Orders Table */}
       <DataTable
         exportColumns={orderExportColumns}
-        exportFileName="kapee-orders"
+        exportFileName={exportFileName}
         columns={columns}
         data={filteredOrders}
         searchPlaceholder="Search by order ID, customer, city, phone..."
@@ -573,6 +624,13 @@ export const OrdersPage = () => {
                 options={statusOptions}
               />
             </div>
+            <div className="min-w-0 sm:w-44 sm:shrink-0">
+              <CustomSelect
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                options={categoryOptions}
+              />
+            </div>
             <div className="min-w-0 sm:w-40 sm:shrink-0">
               <CustomSelect
                 value={dateFilter}
@@ -583,6 +641,7 @@ export const OrdersPage = () => {
             {dateFilter === 'custom' && (
               <div className="col-span-2 sm:col-span-1">
                 <DateRangePicker
+                  defaultOpen
                   from={dateFrom}
                   to={dateTo}
                   onChange={(f, t) => {
@@ -775,6 +834,14 @@ export const OrdersPage = () => {
                   </div>
                 </div>
                 <div className="space-y-1">
+                  <label className="font-semibold text-stone-700 dark:text-stone-300">Order Category</label>
+                  <CustomSelect
+                    value={orderEdit.categoryId}
+                    onChange={(e) => setOrderEdit({ ...orderEdit, categoryId: e.target.value })}
+                    options={categoryChoices}
+                  />
+                </div>
+                <div className="space-y-1">
                   <label className="font-semibold text-stone-700 dark:text-stone-300">Admin Notes (not shown to the customer)</label>
                   <textarea
                     value={orderEdit.notes}
@@ -840,10 +907,22 @@ export const OrdersPage = () => {
                   <span>-₹{selectedOrder.pricing.tierDiscount}</span>
                 </div>
               )}
+              {selectedOrder.pricing.prepaidDiscount > 0 && (
+                <div className="flex justify-between text-emerald-600 font-semibold">
+                  <span>Prepaid Discount</span>
+                  <span>-₹{selectedOrder.pricing.prepaidDiscount}</span>
+                </div>
+              )}
               <div className="flex justify-between text-stone-500">
                 <span>Shipping Fee</span>
                 <span>{selectedOrder.pricing.shippingFee === 0 ? 'FREE' : `₹${selectedOrder.pricing.shippingFee}`}</span>
               </div>
+              {selectedOrder.pricing.codCharge > 0 && (
+                <div className="flex justify-between text-stone-500">
+                  <span>COD Charge</span>
+                  <span>+₹{selectedOrder.pricing.codCharge}</span>
+                </div>
+              )}
               <div className="flex justify-between text-stone-500">
                 <span>GST included (18%)</span>
                 <span>₹{selectedOrder.pricing.tax}</span>
@@ -1172,19 +1251,40 @@ export const OrdersPage = () => {
             </div>
           </div>
 
-          <div className="space-y-1 pt-2 border-t border-stone-200 dark:border-stone-700">
-            <label className="font-semibold text-stone-700 dark:text-stone-300">Payment Option</label>
-            <CustomSelect
-              value={manualForm.paymentMethod}
-              onChange={(e) => setManualForm({ ...manualForm, paymentMethod: e.target.value })}
-              options={[
-                { value: 'Cash on Delivery (COD)', label: 'Cash on Delivery (COD)' },
-                { value: 'UPI / QR Code Collected', label: 'UPI / QR Code Collected' }
-              ]}
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-stone-200 dark:border-stone-700">
+            <div className="space-y-1">
+              <label className="font-semibold text-stone-700 dark:text-stone-300">Payment Option</label>
+              <CustomSelect
+                value={manualForm.paymentMethod}
+                onChange={(e) => setManualForm({ ...manualForm, paymentMethod: e.target.value })}
+                options={[
+                  { value: 'Cash on Delivery (COD)', label: 'Cash on Delivery (COD)' },
+                  { value: 'UPI / QR Code Collected', label: 'UPI / QR Code Collected' }
+                ]}
+              />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <label className="font-semibold text-stone-700 dark:text-stone-300">Order Category</label>
+                <button
+                  type="button"
+                  onClick={() => setCategoriesOpen(true)}
+                  className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 hover:underline"
+                >
+                  Manage
+                </button>
+              </div>
+              <CustomSelect
+                value={manualForm.categoryId}
+                onChange={(e) => setManualForm({ ...manualForm, categoryId: e.target.value })}
+                options={categoryChoices}
+              />
+            </div>
           </div>
         </div>
       </SideDrawer>
+
+      <OrderCategoriesModal isOpen={categoriesOpen} onClose={() => setCategoriesOpen(false)} />
 
       {/* GST Invoice Preview Modal */}
       {invoicePreviewOrder && (

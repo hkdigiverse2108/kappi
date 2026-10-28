@@ -11,7 +11,7 @@ export const CustomSelect = ({
   placeholder = 'Select an option',
   className = '',
   dropdownClassName = '',
-  size = 'md', // 'sm' | 'md'
+  size = 'md', // 'sm' | 'md' | 'toolbar' (same height as the Export CSV button)
   disabled = false,
   name = '',
   id = '',
@@ -169,7 +169,9 @@ export const CustomSelect = ({
         className={`w-full flex items-center justify-between text-left transition-all cursor-pointer ${
           isSmall
             ? 'px-2.5 py-1.5 text-[11px] rounded-lg'
-            : 'px-3.5 py-2.5 text-xs rounded-xl'
+            : size === 'toolbar'
+              ? 'px-3.5 py-2 text-xs rounded-xl'
+              : 'px-3.5 py-2.5 text-xs rounded-xl'
         } bg-stone-50/80 dark:bg-stone-800/80 hover:bg-white dark:hover:bg-stone-800 border ${
           isOpen
             ? 'border-emerald-600 dark:border-emerald-500 ring-2 ring-emerald-deep/15 shadow-sm bg-white dark:bg-stone-800'

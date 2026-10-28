@@ -5,6 +5,7 @@ import { StarRating } from '../common/StarRating';
 import { useUIStore } from '../../store/useUIStore';
 import { useCartStore } from '../../store/useCartStore';
 import { getShortVariantName } from './ProductCard';
+import { isOutOfStock, isVariantAvailable } from '../../utils/stock';
 
 export const QuickViewModal = () => {
   const { quickViewProduct, setQuickViewProduct } = useUIStore();
@@ -24,6 +25,10 @@ export const QuickViewModal = () => {
     name: 'Standard'
   };
 
+  // Stock from Admin > Products > Quantity in Stock: 0 = Out of Stock; a pack bigger than the stock left is unavailable
+  const productSoldOut = isOutOfStock(product);
+  const soldOut = productSoldOut || !isVariantAvailable(product, selectedVariant);
+
   const handleClose = () => {
     setQuickViewProduct(null);
     setQuantity(1);
@@ -32,11 +37,13 @@ export const QuickViewModal = () => {
   };
 
   const handleAddToCart = () => {
+    if (soldOut) return;
     addItem({ product, variant: selectedVariant, quantity });
     handleClose();
   };
 
   const handleBuyNow = () => {
+    if (soldOut) return;
     addItem({ product, variant: selectedVariant, quantity });
     handleClose();
     setIsCartOpen(false);
@@ -114,6 +121,11 @@ export const QuickViewModal = () => {
                   Save ₹{selectedVariant.savings}
                 </span>
               )}
+              {soldOut && (
+                <span className="ml-auto text-xs font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
+                  {productSoldOut ? 'Out of Stock' : 'Pack out of stock'}
+                </span>
+              )}
             </div>
 
             {/* Variants */}
@@ -127,7 +139,10 @@ export const QuickViewModal = () => {
                     <button
                       key={v.id}
                       onClick={() => setSelectedVariantIndex(idx)}
+                      disabled={!isVariantAvailable(product, v) && product.variants.some((o) => isVariantAvailable(product, o))}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                        !isVariantAvailable(product, v) ? 'opacity-50 line-through cursor-not-allowed ' : ''
+                      }${
                         selectedVariantIndex === idx
                           ? 'bg-emerald text-white border-emerald shadow-xs'
                           : 'bg-white text-ink border-emerald-soft hover:border-emerald'
@@ -145,16 +160,23 @@ export const QuickViewModal = () => {
               <div className="flex gap-2">
                 <button
                   onClick={handleAddToCart}
-                  className="btn-primary flex-1 text-xs py-3"
+                  aria-disabled={soldOut}
+                  className={
+                    soldOut
+                      ? 'flex-1 text-xs py-3 font-bold rounded-xl bg-red-50 text-red-700 border border-red-300 cursor-not-allowed flex items-center justify-center gap-2'
+                      : 'btn-primary flex-1 text-xs py-3'
+                  }
                 >
-                  <ShoppingBag className="w-4 h-4" /> Add to Cart
+                  <ShoppingBag className="w-4 h-4" /> {soldOut ? 'Out of Stock' : 'Add to Cart'}
                 </button>
-                <button
-                  onClick={handleBuyNow}
-                  className="btn-gold flex-1 text-xs py-3 font-bold"
-                >
-                  <Zap className="w-4 h-4" /> Buy Now
-                </button>
+                {!soldOut && (
+                  <button
+                    onClick={handleBuyNow}
+                    className="btn-gold flex-1 text-xs py-3 font-bold"
+                  >
+                    <Zap className="w-4 h-4" /> Buy Now
+                  </button>
+                )}
               </div>
 
               <Link

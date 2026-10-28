@@ -10,6 +10,7 @@ import { ReviewsPage } from './pages/ReviewsPage';
 import { FAQPage } from './pages/FAQPage';
 import { OffersPage } from './pages/OffersPage';
 import { CartRewardsPage } from './pages/CartRewardsPage';
+import { CartTrackingPage } from './pages/CartTrackingPage';
 import { DeliveryPaymentsPage } from './pages/DeliveryPaymentsPage';
 import { HomepageManagerPage } from './pages/cms/HomepageManagerPage';
 import { OurStoryPageCMS } from './pages/cms/OurStoryPageCMS';
@@ -80,6 +81,7 @@ export const AdminApp = () => {
         <Route path="reviews" element={<ReviewsPage />} />
         <Route path="faqs" element={<FAQPage />} />
         <Route path="offers" element={<OffersPage />} />
+        <Route path="cart-tracking" element={<CartTrackingPage />} />
         <Route path="cart-rewards" element={<CartRewardsPage />} />
         <Route path="delivery-payments" element={<DeliveryPaymentsPage />} />
 
