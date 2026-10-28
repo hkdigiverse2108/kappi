@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Truck,
@@ -10,7 +10,8 @@ import {
   EyeOff,
   Save,
   RefreshCw,
-  Zap
+  Zap,
+  Banknote
 } from 'lucide-react';
 import { useAdminStore } from '../store/adminStore';
 import { StatusBadge } from '../components/common/StatusBadge';
@@ -22,6 +23,9 @@ export const DeliveryPaymentsPage = () => {
     updateDelhiveryConfig,
     razorpayConfig,
     updateRazorpayConfig,
+    paymentSettings,
+    loadPaymentSettings,
+    savePaymentSettings,
     addToast
   } = useAdminStore();
 
@@ -51,6 +55,17 @@ export const DeliveryPaymentsPage = () => {
       autoCapture: true
     }
   );
+
+  // Which payment options the checkout shows (saved in the backend, unlike the forms above)
+  const [paymentOptions, setPaymentOptions] = useState(
+    paymentSettings || { codEnabled: true, razorpayEnabled: false }
+  );
+  useEffect(() => {
+    loadPaymentSettings();
+  }, [loadPaymentSettings]);
+  useEffect(() => {
+    if (paymentSettings) setPaymentOptions(paymentSettings);
+  }, [paymentSettings]);
 
   // Password / Secret visibility toggles
   const [showDelhiveryToken, setShowDelhiveryToken] = useState(false);
@@ -115,14 +130,27 @@ export const DeliveryPaymentsPage = () => {
   };
 
   // Save Razorpay Form
-  const handleSaveRazorpay = (e) => {
+  const handleSaveRazorpay = async (e) => {
     e.preventDefault();
+    if (!paymentOptions.codEnabled && !paymentOptions.razorpayEnabled) {
+      addToast({
+        type: 'error',
+        title: 'Select a Payment Option',
+        message: 'Keep at least one payment option on for checkout.'
+      });
+      return;
+    }
     updateRazorpayConfig(razorpayForm);
+    try {
+      await savePaymentSettings(paymentOptions);
+    } catch {
+      return; // the store already showed the error
+    }
     triggerKapeeCelebration();
     addToast({
       type: 'success',
-      title: 'Razorpay Saved',
-      message: 'Razorpay credentials saved successfully.'
+      title: 'Payment Settings Saved',
+      message: 'Checkout payment options and Razorpay credentials saved successfully.'
     });
   };
 
@@ -161,7 +189,7 @@ export const DeliveryPaymentsPage = () => {
           }`}
         >
           <Truck className="w-4 h-4" />
-          <span>Delhivery</span>
+          <span>Delivery Partner</span>
           {activeTab === 'delhivery' && (
             <motion.div
               layoutId="providerTabPill"
@@ -180,7 +208,7 @@ export const DeliveryPaymentsPage = () => {
           }`}
         >
           <CreditCard className="w-4 h-4" />
-          <span>Razorpay</span>
+          <span>Payment Gateway</span>
           {activeTab === 'razorpay' && (
             <motion.div
               layoutId="providerTabPill"
@@ -329,23 +357,6 @@ export const DeliveryPaymentsPage = () => {
                 </div>
               </div>
 
-              {/* Row 3: Cash on Delivery Toggle */}
-              <label className="flex items-center gap-3.5 p-4 bg-stone-50 dark:bg-stone-800/40 rounded-xl border border-stone-200/70 dark:border-stone-800 cursor-pointer hover:border-emerald-500/40 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={delhiveryForm.codEnabled}
-                  onChange={(e) => setDelhiveryForm({ ...delhiveryForm, codEnabled: e.target.checked })}
-                  className="w-4 h-4 rounded accent-emerald-700 text-emerald-deep cursor-pointer"
-                />
-                <div>
-                  <p className="font-bold text-stone-800 dark:text-stone-200">
-                    Enable Cash on Delivery (COD)
-                  </p>
-                  <p className="text-[11px] text-stone-400 mt-0.5">
-                    Allow courier to collect cash/UPI at doorstep for orders
-                  </p>
-                </div>
-              </label>
             </div>
           </div>
         </form>
@@ -354,6 +365,62 @@ export const DeliveryPaymentsPage = () => {
       {/* TAB 2: RAZORPAY PAYMENTS */}
       {activeTab === 'razorpay' && (
         <form onSubmit={handleSaveRazorpay} className="space-y-6 w-full">
+          {/* Checkout Payment Options: what customers can choose at checkout */}
+          <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/80 dark:border-stone-800 p-6 sm:p-7 space-y-5 shadow-2xs">
+            <div className="pb-3 border-b border-stone-100 dark:border-stone-800">
+              <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100">
+                Checkout Payment Options
+              </h3>
+              <p className="text-[11px] text-stone-400 mt-0.5">
+                Only the options switched on here are shown to customers at checkout
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              {[
+                {
+                  key: 'codEnabled',
+                  icon: Banknote,
+                  title: 'Cash on Delivery (COD)',
+                  hint: 'Customer pays cash/UPI to the courier at the doorstep'
+                },
+                {
+                  key: 'razorpayEnabled',
+                  icon: CreditCard,
+                  title: 'Razorpay (Online Payment)',
+                  hint: 'UPI, Debit/Credit Cards & Net Banking via Razorpay'
+                }
+              ].map(({ key, icon: Icon, title, hint }) => (
+                <label
+                  key={key}
+                  className={`flex items-center gap-3.5 p-4 rounded-xl border cursor-pointer transition-colors ${
+                    paymentOptions[key]
+                      ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40'
+                      : 'border-stone-200/70 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40 hover:border-emerald-500/40'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={!!paymentOptions[key]}
+                    onChange={(e) => setPaymentOptions({ ...paymentOptions, [key]: e.target.checked })}
+                    className="w-4 h-4 rounded accent-emerald-700 text-emerald-deep cursor-pointer"
+                  />
+                  <Icon className="w-5 h-5 text-emerald-deep dark:text-emerald-400 shrink-0" />
+                  <div>
+                    <p className="font-bold text-stone-800 dark:text-stone-200">{title}</p>
+                    <p className="text-[11px] text-stone-400 mt-0.5">{hint}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            {!paymentOptions.codEnabled && !paymentOptions.razorpayEnabled && (
+              <p className="text-[11px] font-semibold text-red-600">
+                Keep at least one payment option on, otherwise customers cannot place orders.
+              </p>
+            )}
+          </div>
+
           {/* Top Status Card */}
           <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/80 dark:border-stone-800 p-5 sm:p-6 shadow-2xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

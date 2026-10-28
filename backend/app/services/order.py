@@ -13,12 +13,18 @@ from app.repository import order as order_repo
 from app.repository import product as product_repo
 from app.services.cart_offers import get_cart_offers
 from app.services.contact import get_contact_page
+from app.services.payment_settings import enabled_payment_methods
 from app.utils.email import send_email
 from app.utils.email_templates import order_confirmation
 
 logger = logging.getLogger(__name__)
 
-PAYMENT_LABELS = {"upi": "UPI", "card": "Credit/Debit Card", "cod": "Cash on Delivery (COD)"}
+PAYMENT_LABELS = {
+    "upi": "UPI",
+    "card": "Credit/Debit Card",
+    "cod": "Cash on Delivery (COD)",
+    "razorpay": "Razorpay (Online)",
+}
 
 
 def _now() -> str:
@@ -145,7 +151,9 @@ async def _send_confirmation(order: dict, confirmed: bool = False, contact: dict
 
 async def place_order(db, data: dict, user: dict | None, background_tasks: BackgroundTasks, site: str | None = None) -> dict:
     """Order placed from the website checkout. Prices and the total are worked out here, not taken from the browser."""
-    items = await _priced_items(db, [i for i in data["items"] if not i["isFreeGift"]])
+    if data["paymentMethod"] not in await enabled_payment_methods(db):
+        raise HTTPException(status_code=400, detail="This payment option is not available right now. Please choose another one.")
+    items =await _priced_items(db, [i for i in data["items"] if not i["isFreeGift"]])
     if not items:
         raise HTTPException(status_code=400, detail="Your cart is empty")
 

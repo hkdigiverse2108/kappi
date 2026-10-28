@@ -14,6 +14,7 @@ import * as faqApi from '../../api/faqApi';
 import * as policyApi from '../../api/policyApi';
 import * as footerApi from '../../api/footerApi';
 import * as announcementApi from '../../api/announcementApi';
+import * as paymentSettingsApi from '../../api/paymentSettingsApi';
 import * as orderApi from '../../api/orderApi';
 import { productBadgeList } from '../lib/productBadges';
 
@@ -717,6 +718,27 @@ export const useAdminStore = create(
         }));
         get().logActivity('Payments', 'Updated Razorpay payment gateway credentials');
       },
+
+      // Payment options the checkout shows (COD / Razorpay) - from the backend (GET /api/payment-settings),
+      // saved back with PUT /api/payment-settings
+      paymentSettings: null,
+      loadPaymentSettings: async () => {
+        try {
+          set({ paymentSettings: await paymentSettingsApi.fetchPaymentSettings() });
+        } catch (err) {
+          console.error('Failed to load payment settings:', err);
+        }
+      },
+      // Returns the save request; on failure the settings are reloaded from the backend
+      savePaymentSettings: (settings) => {
+        set({ paymentSettings: settings });
+        get().logActivity('Payments', 'Updated checkout payment options');
+        return paymentSettingsApi.savePaymentSettings(settings).catch((err) => {
+          get().addToast({ type: 'error', title: 'Save Failed', message: `Could not save payment options: ${err.message}` });
+          get().loadPaymentSettings();
+          throw err;
+        });
+      },
       paymentGateways: initialPaymentGateways,
       updatePaymentGateway: (id, updates) => {
         set((state) => ({
@@ -1271,6 +1293,7 @@ export const useAdminStore = create(
         ourStory: state.ourStory,
         // policies are not cached: they always come fresh from the backend (loadPolicies)
         // footer is not cached: it always comes fresh from the backend (loadFooter)
+        // paymentSettings is not cached: checkout must never offer an option that was switched off
         // Announcement ticker cache (refreshed from the backend on every visit)
         announcementBar: state.announcementBar,
         activityLogs: state.activityLogs

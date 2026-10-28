@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   ShieldCheck,
   Lock,
   Truck,
   Banknote,
+  CreditCard,
   CheckCircle2,
   ChevronRight,
   ArrowLeft,
@@ -16,6 +17,7 @@ import { Logo } from '../components/common/Logo';
 import { useCartStore } from '../store/useCartStore';
 import { useUserStore } from '../store/useUserStore';
 import { placeOrder } from '../api/orderApi';
+import { useAdminStore } from '../admin/store/adminStore';
 
 export const Checkout = () => {
   const navigate = useNavigate();
@@ -57,8 +59,29 @@ export const Checkout = () => {
   // Signed-in customers can keep this address in My Account > Addresses (ticked when they have none yet)
   const [saveAddress, setSaveAddress] = useState(!user?.addresses?.length);
 
-  // Payment Option
+  // Payment Option - only the ones switched on in Admin > Delivery & Payments > Payment Gateway
+  const paymentSettings = useAdminStore((s) => s.paymentSettings);
+  const loadPaymentSettings = useAdminStore((s) => s.loadPaymentSettings);
+  useEffect(() => {
+    loadPaymentSettings();
+  }, [loadPaymentSettings]);
+  const paymentOptions = [
+    paymentSettings?.codEnabled && {
+      id: 'cod',
+      icon: Banknote,
+      title: 'Cash On Delivery (COD)',
+      hint: 'Pay at doorstep with cash or delivery QR'
+    },
+    paymentSettings?.razorpayEnabled && {
+      id: 'razorpay',
+      icon: CreditCard,
+      title: 'Pay Online (Razorpay)',
+      hint: 'UPI, Debit/Credit Cards & Net Banking'
+    }
+  ].filter(Boolean);
   const [paymentMethod, setPaymentMethod] = useState('cod');
+  // Falls back to the first available option when the chosen one is not offered
+  const selectedPayment = paymentOptions.some((o) => o.id === paymentMethod) ? paymentMethod : paymentOptions[0]?.id;
 
   // Auto-fill city and state from pincode
   const handlePincodeChange = (val) => {
@@ -138,7 +161,7 @@ export const Checkout = () => {
           quantity: i.quantity,
           isFreeGift: !!i.isFreeGift
         })),
-        paymentMethod,
+        paymentMethod: selectedPayment,
         couponCode: coupon?.code || null,
         giftWrap,
         notes: orderNote || ''
@@ -393,30 +416,34 @@ export const Checkout = () => {
 
                 {/* Payment Options Selection */}
                 <div className="space-y-3">
-                  {/* Only Cash on Delivery for now: UPI / Card come back once a payment gateway is connected */}
-                  {/* Cash on Delivery (COD) */}
-                  <div
-                    onClick={() => setPaymentMethod('cod')}
-                    className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                      paymentMethod === 'cod' ? 'border-emerald bg-emerald-soft/30' : 'border-emerald-soft'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Banknote className="w-5 h-5 text-emerald" />
-                        <div>
-                          <p className="text-xs font-bold text-ink">Cash On Delivery (COD)</p>
-                          <p className="text-[11px] text-muted">Pay at doorstep with cash or delivery QR</p>
+                  {paymentOptions.length === 0 && (
+                    <p className="text-xs text-muted">Loading payment options...</p>
+                  )}
+                  {paymentOptions.map(({ id, icon: Icon, title, hint }) => (
+                    <div
+                      key={id}
+                      onClick={() => setPaymentMethod(id)}
+                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                        selectedPayment === id ? 'border-emerald bg-emerald-soft/30' : 'border-emerald-soft'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Icon className="w-5 h-5 text-emerald" />
+                          <div>
+                            <p className="text-xs font-bold text-ink">{title}</p>
+                            <p className="text-[11px] text-muted">{hint}</p>
+                          </div>
                         </div>
+                        <input
+                          type="radio"
+                          checked={selectedPayment === id}
+                          onChange={() => setPaymentMethod(id)}
+                          className="text-emerald"
+                        />
                       </div>
-                      <input
-                        type="radio"
-                        checked={paymentMethod === 'cod'}
-                        onChange={() => setPaymentMethod('cod')}
-                        className="text-emerald"
-                      />
                     </div>
-                  </div>
+                  ))}
                 </div>
 
                 {orderError && (
@@ -426,7 +453,7 @@ export const Checkout = () => {
                 {/* Complete Order Button */}
                 <button
                   type="submit"
-                  disabled={isProcessing}
+                  disabled={isProcessing || !selectedPayment}
                   className="btn-gold w-full text-sm font-bold py-4 tracking-wider uppercase shadow-gold flex items-center justify-center gap-2"
                 >
                   {isProcessing ? (

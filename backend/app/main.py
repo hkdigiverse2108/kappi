@@ -39,6 +39,7 @@ from app.controllers.newsletter import router as newsletter_router
 from app.controllers.our_story import router as our_story_router
 from app.controllers.footer import router as footer_router
 from app.controllers.announcement import router as announcement_router
+from app.controllers.payment_settings import router as payment_settings_router
 from app.controllers.faq import router as faq_router
 from app.controllers.policy import router as policy_router
 from app.controllers.order import router as order_router
@@ -106,6 +107,7 @@ app.include_router(newsletter_router)
 app.include_router(our_story_router)
 app.include_router(footer_router)
 app.include_router(announcement_router)
+app.include_router(payment_settings_router)
 app.include_router(faq_router)
 app.include_router(policy_router)
 app.include_router(order_router)
