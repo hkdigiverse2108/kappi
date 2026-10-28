@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Gift,
   MessageSquareText,
   ShoppingBag,
   Plus,
@@ -453,13 +452,6 @@ export const OrdersPage = () => {
       cell: (row) => (
         <span className="text-xs text-stone-600 dark:text-stone-300">
           {row.items.length} item(s){row.items[0]?.variant ? ` • ${row.items[0].variant}` : ''}
-          {row.giftWrap && (
-            <HoverTip
-              icon={Gift}
-              title="Eco-Gift Packaging"
-              text={`Customer asked for gift packaging${row.pricing?.giftWrapFee ? ` (+₹${row.pricing.giftWrapFee} paid)` : ''}.`}
-            />
-          )}
           {row.customerNote && <HoverTip icon={MessageSquareText} title="Customer Note" text={row.customerNote} />}
         </span>
       )
@@ -722,27 +714,16 @@ export const OrdersPage = () => {
               </div>
             </div>
 
-            {/* Customer's note and gift packaging (from the website cart) */}
-            {(selectedOrder.customerNote || selectedOrder.giftWrap) && (
+            {/* Customer's note (from the website cart) */}
+            {selectedOrder.customerNote && (
               <div className="p-4 rounded-2xl bg-[#FDF8E8] dark:bg-[#2A2410]/60 border border-[#C8962E]/40 space-y-2 text-xs">
                 <span className="text-[#8F6414] dark:text-[#EBCB6B] font-bold uppercase text-[10px] tracking-wider">
                   Customer Instructions
                 </span>
-                {selectedOrder.giftWrap && (
-                  <p className="flex items-center gap-1.5 font-bold text-stone-800 dark:text-stone-100">
-                    <Gift className="w-4 h-4 text-[#C8962E]" />
-                    Eco-Gift Packaging requested
-                    {selectedOrder.pricing?.giftWrapFee > 0 && (
-                      <span className="font-medium text-stone-500">(+₹{selectedOrder.pricing.giftWrapFee} paid)</span>
-                    )}
-                  </p>
-                )}
-                {selectedOrder.customerNote && (
-                  <p className="flex items-start gap-1.5 text-stone-700 dark:text-stone-200 whitespace-pre-line">
-                    <MessageSquareText className="w-4 h-4 text-[#C8962E] shrink-0 mt-0.5" />
-                    <span>"{selectedOrder.customerNote}"</span>
-                  </p>
-                )}
+                <p className="flex items-start gap-1.5 text-stone-700 dark:text-stone-200 whitespace-pre-line">
+                  <MessageSquareText className="w-4 h-4 text-[#C8962E] shrink-0 mt-0.5" />
+                  <span>"{selectedOrder.customerNote}"</span>
+                </p>
               </div>
             )}
 
@@ -857,12 +838,6 @@ export const OrdersPage = () => {
                 <div className="flex justify-between text-emerald-600 font-semibold">
                   <span>Extra Cart Discount</span>
                   <span>-₹{selectedOrder.pricing.tierDiscount}</span>
-                </div>
-              )}
-              {selectedOrder.pricing.giftWrapFee > 0 && (
-                <div className="flex justify-between text-stone-500">
-                  <span>Gift Packaging</span>
-                  <span>₹{selectedOrder.pricing.giftWrapFee}</span>
                 </div>
               )}
               <div className="flex justify-between text-stone-500">

@@ -145,8 +145,6 @@ def order_confirmation(order: dict, confirmed: bool = False, contact: dict | Non
         summary.append((f"Coupon ({pricing.get('couponCode')})", f"-{_money(pricing['couponDiscount'])}"))
     if pricing.get("tierDiscount"):
         summary.append(("Extra Cart Discount", f"-{_money(pricing['tierDiscount'])}"))
-    if pricing.get("giftWrapFee"):
-        summary.append(("Gift Packaging", _money(pricing["giftWrapFee"])))
     summary.append(("Shipping", "FREE" if not pricing.get("shippingFee") else _money(pricing["shippingFee"])))
 
     # ---------- plain text ----------
