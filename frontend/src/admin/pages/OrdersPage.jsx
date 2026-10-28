@@ -532,12 +532,10 @@ export const OrdersPage = () => {
     { header: 'Coupon Code', value: (o) => o.pricing?.couponCode },
     { header: 'Coupon Discount', value: (o) => o.pricing?.couponDiscount },
     { header: 'Tier Discount', value: (o) => o.pricing?.tierDiscount },
-    { header: 'Gift Wrap Fee', value: (o) => o.pricing?.giftWrapFee },
     { header: 'Shipping Fee', value: (o) => o.pricing?.shippingFee },
     { header: 'Tax', value: (o) => o.pricing?.tax },
     { header: 'Total', value: (o) => o.pricing?.total },
     { header: 'Payment Method', value: (o) => o.payment?.method },
-    { header: 'Gift Wrap', value: (o) => (o.giftWrap ? 'Yes' : 'No') },
     { header: 'Customer Note', value: (o) => o.customerNote }
   ];
 

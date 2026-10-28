@@ -26,12 +26,10 @@ export const Checkout = () => {
     getSubtotal,
     getSavings,
     getShippingFee,
-    getGiftWrapFee,
     getCouponDiscount,
     getExtraTierDiscount,
     getFinalTotal,
     coupon,
-    giftWrap,
     orderNote,
     clearCart
   } = useCartStore();
@@ -112,7 +110,6 @@ export const Checkout = () => {
   const subtotal = getSubtotal();
   const savings = getSavings();
   const shippingFee = getShippingFee();
-  const giftWrapFee = getGiftWrapFee();
   const couponDiscount = getCouponDiscount();
   const extraTierDiscount = getExtraTierDiscount();
   const finalTotal = getFinalTotal();
@@ -163,7 +160,6 @@ export const Checkout = () => {
         })),
         paymentMethod: selectedPayment,
         couponCode: coupon?.code || null,
-        giftWrap,
         notes: orderNote || ''
       });
 
@@ -509,12 +505,6 @@ export const Checkout = () => {
                   <div className="flex justify-between text-success font-semibold">
                     <span>Coupon ({coupon.code})</span>
                     <span>-₹{couponDiscount}</span>
-                  </div>
-                )}
-                {giftWrapFee > 0 && (
-                  <div className="flex justify-between">
-                    <span>Gift Packaging</span>
-                    <span>+₹{giftWrapFee}</span>
                   </div>
                 )}
                 <div className="flex justify-between">

@@ -48,7 +48,6 @@ class CartOffersContent(BaseModel):
     """Cart rewards shown on the cart progress bar, and the cart fees."""
     # Shipping charged when the cart is below the free shipping amount (or always, if that reward is off)
     shippingFee: int = Field(default=0, ge=0)
-    giftWrapFee: int = Field(default=0, ge=0)
     freeShipping: FreeShippingReward = FreeShippingReward()
     freeGift: FreeGiftReward = FreeGiftReward()
     extraDiscount: ExtraDiscountReward = ExtraDiscountReward()

@@ -174,8 +174,7 @@ async def place_order(db, data: dict, user: dict | None, background_tasks: Backg
     coupon_code, coupon_discount = await _coupon_discount(db, data.get("couponCode"), items, subtotal, shipping_fee)
     extra = offers["extraDiscount"]
     tier_discount = _round(subtotal * extra["percent"] / 100) if extra["enabled"] and subtotal >= extra["threshold"] else 0
-    gift_wrap_fee = offers["giftWrapFee"] if data["giftWrap"] else 0
-    total = max(0, subtotal - coupon_discount - tier_discount + shipping_fee + gift_wrap_fee)
+    total = max(0, subtotal - coupon_discount - tier_discount + shipping_fee)
 
     now = _now()
     order = {
@@ -193,7 +192,6 @@ async def place_order(db, data: dict, user: dict | None, background_tasks: Backg
             "tierDiscount": tier_discount,
             "discount": coupon_discount + tier_discount,
             "shippingFee": shipping_fee,
-            "giftWrapFee": gift_wrap_fee,
             "tax": _gst_included(total),
             "total": total,
         },
@@ -204,7 +202,6 @@ async def place_order(db, data: dict, user: dict | None, background_tasks: Backg
         "statusHistory": [{"status": "Pending", "at": now}],
         # What the customer typed in the cart's order note; admin notes are kept apart in "notes"
         "customerNote": data.get("notes", "").strip(),
-        "giftWrap": data["giftWrap"],
         "notes": "",
         # Unread in the admin bell until an admin opens it or marks it as read
         "adminRead": False,
@@ -242,7 +239,6 @@ async def create_manual_order(db, data: dict, background_tasks: BackgroundTasks,
             "tierDiscount": 0,
             "discount": 0,
             "shippingFee": shipping_fee,
-            "giftWrapFee": 0,
             "tax": _gst_included(total),
             "total": total,
         },
@@ -293,7 +289,7 @@ async def track_order(db, order_number: str) -> dict:
         ],
         "pricing": {
             k: order["pricing"].get(k)
-            for k in ("subtotal", "couponCode", "couponDiscount", "tierDiscount", "shippingFee", "giftWrapFee", "total")
+            for k in ("subtotal", "couponCode", "couponDiscount", "tierDiscount", "shippingFee", "total")
         },
         "payment": {"method": order["payment"]["method"]},
         "fulfillment": {k: order["fulfillment"].get(k) for k in ("courier", "awb", "trackingUrl", "shippedAt", "deliveredAt")},

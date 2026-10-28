@@ -9,7 +9,6 @@ import { triggerKapeeCelebration } from '../components/common/Confetti';
 
 const EMPTY_OFFERS = {
   shippingFee: 0,
-  giftWrapFee: 0,
   freeShipping: { enabled: false, threshold: 0 },
   freeGift: { enabled: false, threshold: 0, gifts: [] },
   extraDiscount: { enabled: false, threshold: 0, percent: 0 }
@@ -18,7 +17,6 @@ const EMPTY_OFFERS = {
 // Only the fields the backend saves (the GET also returns the gift's product details)
 const toSaved = (offers) => ({
   shippingFee: Number(offers.shippingFee) || 0,
-  giftWrapFee: Number(offers.giftWrapFee) || 0,
   freeShipping: {
     enabled: offers.freeShipping.enabled,
     threshold: Number(offers.freeShipping.threshold) || 0
@@ -353,7 +351,7 @@ export const CartRewardsPage = () => {
         <RewardCard
           icon={Package}
           title="Cart Fees"
-          description="Shipping charged below the free shipping amount, and the gift packaging option price."
+          description="Shipping charged below the free shipping amount."
           enabled
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -362,12 +360,6 @@ export const CartRewardsPage = () => {
               hint={form.freeShipping.enabled ? `Free from ₹${form.freeShipping.threshold || 0}` : 'Charged on every order'}
               value={form.shippingFee}
               onChange={(v) => setForm((f) => ({ ...f, shippingFee: v }))}
-            />
-            <AmountField
-              label="Gift Packaging Fee"
-              hint="Customer can add it in the cart"
-              value={form.giftWrapFee}
-              onChange={(v) => setForm((f) => ({ ...f, giftWrapFee: v }))}
             />
           </div>
         </RewardCard>

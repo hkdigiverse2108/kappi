@@ -50,7 +50,6 @@ class CheckoutOrder(BaseModel):
     # Must be one of the options switched on in Admin > Delivery & Payments (checked in place_order)
     paymentMethod: Literal["cod", "razorpay"] = "cod"
     couponCode: str | None = None
-    giftWrap: bool = False
     notes: str = Field(default="", max_length=1000)
 
 

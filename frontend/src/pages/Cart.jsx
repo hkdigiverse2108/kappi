@@ -33,7 +33,6 @@ export const Cart = () => {
     getMrpTotal,
     getSavings,
     getShippingFee,
-    getGiftWrapFee,
     getCouponDiscount,
     getExtraTierDiscount,
     getFinalTotal,
@@ -41,8 +40,6 @@ export const Cart = () => {
     couponError,
     applyCoupon,
     removeCoupon,
-    giftWrap,
-    setGiftWrap,
     orderNote,
     setOrderNote,
     addItem,
@@ -55,7 +52,6 @@ export const Cart = () => {
   const mrpTotal = getMrpTotal();
   const savings = getSavings();
   const shippingFee = getShippingFee();
-  const giftWrapFee = getGiftWrapFee();
   const couponDiscount = getCouponDiscount();
   const extraTierDiscount = getExtraTierDiscount();
   const finalTotal = getFinalTotal();
@@ -213,34 +209,16 @@ export const Cart = () => {
             ))}
           </div>
 
-          {/* Addon: Gift Packaging & Order Notes */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-white p-5 rounded-3xl border border-emerald-soft flex items-center justify-between">
-              <label className="flex items-center gap-3 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={giftWrap}
-                  onChange={(e) => setGiftWrap(e.target.checked)}
-                  className="rounded text-emerald w-4 h-4"
-                />
-                <div>
-                  <p className="text-xs font-bold text-ink">Eco-Gift Packaging</p>
-                  <p className="text-[11px] text-muted">Includes golden ribbon and greeting note</p>
-                </div>
-              </label>
-              <span className="text-xs font-bold text-emerald-deep">+₹{cartOffers?.giftWrapFee || 0}</span>
-            </div>
-
-            <div className="bg-white p-5 rounded-3xl border border-emerald-soft">
-              <label className="block text-xs font-bold text-ink mb-1.5">Special Delivery Instructions:</label>
-              <input
-                type="text"
-                value={orderNote}
-                onChange={(e) => setOrderNote(e.target.value)}
-                placeholder="e.g. Leave with security, call before arrival"
-                className="w-full text-xs px-3 py-2 rounded-xl border border-emerald-soft focus:outline-none focus:border-emerald"
-              />
-            </div>
+          {/* Order Notes */}
+          <div className="bg-white p-5 rounded-3xl border border-emerald-soft">
+            <label className="block text-xs font-bold text-ink mb-1.5">Special Delivery Instructions:</label>
+            <input
+              type="text"
+              value={orderNote}
+              onChange={(e) => setOrderNote(e.target.value)}
+              placeholder="e.g. Leave with security, call before arrival"
+              className="w-full text-xs px-3 py-2 rounded-xl border border-emerald-soft focus:outline-none focus:border-emerald"
+            />
           </div>
         </div>
 
@@ -308,12 +286,6 @@ export const Cart = () => {
                 <div className="flex justify-between text-success font-semibold">
                   <span>Coupon Discount</span>
                   <span>-₹{couponDiscount}</span>
-                </div>
-              )}
-              {giftWrap && (
-                <div className="flex justify-between">
-                  <span>Gift Packaging</span>
-                  <span>+₹{giftWrapFee}</span>
                 </div>
               )}
               <div className="flex justify-between">

@@ -42,7 +42,6 @@ export const CartDrawer = () => {
     getMrpTotal,
     getSavings,
     getShippingFee,
-    getGiftWrapFee,
     getCouponDiscount,
     getExtraTierDiscount,
     getFinalTotal,
@@ -50,8 +49,6 @@ export const CartDrawer = () => {
     couponError,
     applyCoupon,
     removeCoupon,
-    giftWrap,
-    setGiftWrap,
     orderNote,
     setOrderNote,
     addItem,
@@ -68,7 +65,6 @@ export const CartDrawer = () => {
   const mrpTotal = getMrpTotal();
   const savings = getSavings();
   const shippingFee = getShippingFee();
-  const giftWrapFee = getGiftWrapFee();
   const couponDiscount = getCouponDiscount();
   const extraTierDiscount = getExtraTierDiscount();
   const finalTotal = getFinalTotal();
@@ -301,20 +297,6 @@ export const CartDrawer = () => {
                   </div>
                 ))}
 
-                {/* Gift Wrap option */}
-                <div className="flex items-center justify-between p-3 rounded-xl bg-ivory border border-emerald-soft text-xs">
-                  <label className="flex items-center gap-2 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={giftWrap}
-                      onChange={(e) => setGiftWrap(e.target.checked)}
-                      className="rounded text-emerald focus:ring-emerald w-4 h-4"
-                    />
-                    <span className="text-ink font-medium">Add Eco-Gift Packaging</span>
-                  </label>
-                  <span className="font-bold text-emerald-deep">+₹{cartOffers?.giftWrapFee || 0}</span>
-                </div>
-
                 {/* Order Note accordion */}
                 <div>
                   <button
@@ -429,12 +411,6 @@ export const CartDrawer = () => {
                   <div className="flex justify-between text-success font-medium">
                     <span>Coupon ({coupon?.code})</span>
                     <span>-₹{couponDiscount}</span>
-                  </div>
-                )}
-                {giftWrap && (
-                  <div className="flex justify-between">
-                    <span>Eco Gift Packaging</span>
-                    <span>+₹{giftWrapFee}</span>
                   </div>
                 )}
                 <div className="flex justify-between">

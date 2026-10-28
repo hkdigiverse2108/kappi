@@ -26,7 +26,6 @@ export const ReportsPage = () => {
         { header: 'Subtotal', value: (o) => o.pricing?.subtotal },
         { header: 'Coupon Discount', value: (o) => o.pricing?.couponDiscount },
         { header: 'Tier Discount', value: (o) => o.pricing?.tierDiscount },
-        { header: 'Gift Wrap Fee', value: (o) => o.pricing?.giftWrapFee },
         { header: 'Shipping Fee', value: (o) => o.pricing?.shippingFee },
         { header: 'Tax', value: (o) => o.pricing?.tax },
         { header: 'Total', value: (o) => o.pricing?.total }

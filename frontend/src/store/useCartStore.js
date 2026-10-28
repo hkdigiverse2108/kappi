@@ -16,7 +16,6 @@ export const useCartStore = create(
       availableCoupons: [],
       // Cart rewards and fees from Admin > Offers > Cart Rewards (loaded on app start); null = not loaded yet
       cartOffers: null,
-      giftWrap: false,
       orderNote: '',
       cartBump: false,
       unlockToast: null, // { title: string, desc: string }
@@ -234,7 +233,6 @@ export const useCartStore = create(
       },
 
       removeCoupon: () => set({ coupon: null, couponError: '' }),
-      setGiftWrap: (val) => set({ giftWrap: val }),
       setOrderNote: (note) => set({ orderNote: note }),
 
       clearCart: () => {
@@ -242,7 +240,6 @@ export const useCartStore = create(
           items: [],
           coupon: null,
           couponError: '',
-          giftWrap: false,
           orderNote: '',
           unlockedMilestones: { shipping: false, gift: false, extraDiscount: false }
         });
@@ -317,19 +314,14 @@ export const useCartStore = create(
         return offers.shippingFee;
       },
 
-      getGiftWrapFee: () => {
-        return get().giftWrap ? get().cartOffers?.giftWrapFee || 0 : 0;
-      },
-
       getFinalTotal: () => {
         const subtotal = get().getSubtotal();
         if (subtotal === 0) return 0;
         const couponDisc = get().getCouponDiscount();
         const extraTierDisc = get().getExtraTierDiscount();
         const shipping = get().getShippingFee();
-        const giftWrap = get().getGiftWrapFee();
 
-        return Math.max(0, subtotal - couponDisc - extraTierDisc + shipping + giftWrap);
+        return Math.max(0, subtotal - couponDisc - extraTierDisc + shipping);
       }
     }),
     {
@@ -337,7 +329,6 @@ export const useCartStore = create(
       partialize: (state) => ({
         items: state.items,
         coupon: state.coupon,
-        giftWrap: state.giftWrap,
         orderNote: state.orderNote,
         unlockedMilestones: state.unlockedMilestones
       })
