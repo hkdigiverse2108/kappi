@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => {
   // .env lives in the project root, shared with the backend
   const env = loadEnv(mode, '..', '')
   // 127.0.0.1 instead of localhost: on Windows "localhost" adds ~200ms to every request
-  const backendUrl = `http://127.0.0.1:${env.BACKEND_PORT || 5000}`
+  const backendUrl = env.BACKEND_URL || `http://127.0.0.1:${env.BACKEND_PORT || 5000}`
 
   return {
     plugins: [react(), seoHtmlPlugin(backendUrl)],
